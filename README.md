@@ -91,7 +91,7 @@ git pull origin main
 
 ### Updating
 
-To get the latest version of the styles, you must first enter the directory (either `` or ``, depending), and then you 
+To get the latest version of the styles, you must first enter the directory (either `~/Library/texmf/` or `/usr/local/texlive/texmf-local`, depending), and then you 
 have to execute `git pull origin main` again.
 
 
