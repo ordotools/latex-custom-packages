@@ -13,13 +13,13 @@ You must have MacTeX installed -- these instructions were tested on macOS Ventur
 
 Create directory `texmf` in `Library`:
 
-```sh
+```zsh
 mkdir ~/Library/texmf
 ```
 
 Create a `tex` directory inside `texmf` as a GitHub repo:
 
-```sh
+```zsh
 cd ~/Library/texmf/
 git init tex
 cd tex
@@ -28,7 +28,7 @@ cd tex
 Now add the git repository. TeX live will find all the subdirectories inside `tex` and you can use any of the 
 styles contained therein.
 
-```sh
+```zsh
 git remote add -f origin https://github.com/corei8/latex-custom-styles.git
 ```
 
@@ -38,26 +38,26 @@ git remote add -f origin https://github.com/corei8/latex-custom-styles.git
 
 TeX Live should already have this path waiting for you:
 
-```sh
+```zsh
 cd /usr/local/texlive/texmf-local
 ```
 
 If it does not exist, then make the directory, and then repeat the above command:
 
-```sh
+```zsh
 mkdir /usr/local/texlive/texmf-local
 ```
 
 Initialize the GitHub repo:
 
-```sh
+```zsh
 git init
 ```
 
 Now add the git repository. TeX live will find all the subdirectories inside `texmf-local` and you can use any of the 
 styles contained therein.
 
-```sh
+```zsh
 git remote add -f origin https://github.com/corei8/latex-custom-styles.git
 ```
 
@@ -69,13 +69,13 @@ git remote add -f origin https://github.com/corei8/latex-custom-styles.git
 
 Run the command:
 
-```sh
+```zsh
 git config core.sparseCheckout true
 ```
 
 Now you can select the directories that you want to install:
 
-```sh
+```zsh
 echo "some/dir/" >> .git/info/sparse-checkout
 ```
 
@@ -85,7 +85,7 @@ Repeat the above command, changing the directory as desired, for as many folders
 
 Pull the repository with:
 
-```sh
+```zsh
 git pull origin main
 ```
 
