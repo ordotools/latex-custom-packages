@@ -1,0 +1,34 @@
+% Rubric package for ceremony notes.
+% 
+% (c) Fr. Gregory Robert Barnes
+%
+%% This program can be redistributed and/or modified under the terms
+%% of the LaTeX Project Public License Distributed from CTAN archives
+%% in directory macros/latex/base/lppl.txt.
+% 
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{mypackage}
+  [2023/02/09 v0.01 LaTeX package for ceremony notes.]
+
+\author{Fr. G. R. Barnes}
+\date{\today}
+
+\RequirePackage{microtype}
+\RequirePackage{fontenc}
+\RequirePackage{tgpagella}
+\RequirePackage{pifont}
+\RequirePackage{xcolor}
+\RequirePackage{tabularx}
+\RequirePackage{booktabs}
+
+
+\RequirePackage{gregoriotex}
+
+\newcommand{\hi}{Hello, this is my own package}
+\let\myDate\date
+\newcommand\GoodBye[1][\bfseries]{{#1Good Bye}}
+
+\endinput
+%%
+%% End of file `mypackage.sty'.
+
