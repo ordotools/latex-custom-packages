@@ -32,7 +32,7 @@ styles contained therein.
 git remote add -f origin https://github.com/corei8/latex-custom-styles.git
 ```
 
-*Skip the next section and continue to (installation)[#installation].*
+*Skip the next section and continue to [ installation ]( #installation ).*
 
 ### Install for all users
 
@@ -65,7 +65,7 @@ git remote add -f origin https://github.com/corei8/latex-custom-styles.git
 
 #### If you want to have only particular stylesheets
 
-*Skip to the (final step)[#final-step] if this is not for you.*
+*Skip to the [ final step ]( #final-step ) if this is not for you.*
 
 Run the command:
 
