@@ -43,17 +43,20 @@
     %\vskip 40\p@}
 \makeatother
 
+\RequirePackage{gregoriosyms}
+
+\RequirePackage{titlesec}
+\titleformat{\section}{\color{red}\normalfont\normalfont}{\color{black}\thesection}{1em}{}
+
 \RequirePackage{multicol}
 \setlength{\columnseprule}{0.5pt}
 \def\columnseprulecolor{\color{red}}
+
+
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
 % TODO: find a way to customize this for small chant snippets
+
 \ProcessOptions\relax
-
-\RequirePackage{titlesec}
-
-%\titleformat{\section}[nowrap]{\normalfont}{\textcolor{red}{\thesection.}}{1em}{}
-\titleformat{\section}{\color{red}\normalfont\normalfont}{\color{black}\thesection}{1em}{}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
@@ -79,6 +82,10 @@
 
 \newcommand{\cross}[0]{
   \textcolor{red}{\ding{64}}
+}
+
+\renewcommand{\Rbar}[0]{
+  \textcolor{red}{\Rbar}
 }
 
 \endinput
