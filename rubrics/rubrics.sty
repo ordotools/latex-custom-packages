@@ -31,11 +31,16 @@
 \RequirePackage[Rejne]{fncychap}
 
 \makeatletter
-  \ChNameVar{\centering\Huge\rm\bfseries}
-  \ChNumVar{\Huge}\ChTitleVar{\centering\Huge\rm}
-  \ChNameUpperCase
-  \ChTitleUpperCase
+  %\ChNameVar{\centering\Huge\rm\bfseries}
+  %\ChNumVar{\Huge}\ChTitleVar{\centering\Huge\rm}
+  %\ChNameUpperCase
+  %\ChTitleUpperCase
   \ChRuleWidth{1pt}
+  \renewcommand{\DOCH}{%
+    \setlength{\fboxrule}{\RW} % Let fbox lines be controlled by
+                               % \ChRuleWidth
+    \fbox{\CNV\FmN{\@chapapp}\space \CNoV\thechapter}\par\nobreak
+    \vskip 40\p@}
 \makeatother
 
 \RequirePackage{multicol}
