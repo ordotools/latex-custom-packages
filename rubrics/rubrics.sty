@@ -50,6 +50,10 @@
 % TODO: find a way to customize this for small chant snippets
 \ProcessOptions\relax
 
+\renewcommand{\section}{1}{
+  \textcolor{red}{\section{#1}}
+}
+
 \newcommand{\preface}[2]{
   \chapter*{Preface}
   \begin{center}
