@@ -34,10 +34,13 @@
 % TODO: find a way to customize this for small chant snippets
 \ProcessOptions\relax
 
-\newcommand{\preface}[1]{
-  \chapter*{Abstract}
-  \begin{multicols}{2}
+\newcommand{\preface}[2]{
+  \chapter*{Preface}
+  \begin{center}
     #1 
+  \end{center}
+  \begin{multicols}{2}
+    #2 
   \end{multicols}
 }
 
