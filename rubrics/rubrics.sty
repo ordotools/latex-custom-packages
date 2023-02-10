@@ -44,7 +44,7 @@
 \makeatother
 
 \RequirePackage{multicol}
-\setlength{\columnseprule}{1pt}
+\setlength{\columnseprule}{0.5pt}
 \def\columnseprulecolor{\color{red}}
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
 % TODO: find a way to customize this for small chant snippets
@@ -52,7 +52,8 @@
 
 \RequirePackage{titlesec}
 
-\titleformat{\section}[wrap]{\normalfont}{\textcolor{red}{\thesection.}}{1em}{}
+%\titleformat{\section}[nowrap]{\normalfont}{\textcolor{red}{\thesection.}}{1em}{}
+\titleformat{\section}{\color{red}\normalfont\Large\bfseries}{\color{red}\thesection}{1em}{}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
