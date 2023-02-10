@@ -18,6 +18,7 @@
 \RequirePackage{tgpagella}
 \RequirePackage{pifont}
 \RequirePackage{xcolor}
+\definecolor{red}{RGB}{229,53,44} % this is the same as \gregoriocolor
 \RequirePackage{tabularx}
 \RequirePackage{booktabs}
 \RequirePackage[
@@ -29,7 +30,8 @@
 \RequirePackage{framed}
 \RequirePackage[Rejne]{fncychap}
 \RequirePackage{multicol}
-
+\setlength{\columnseprule}{1pt}
+\def\columnseprulecolor{\color{red}}
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
 % TODO: find a way to customize this for small chant snippets
 \ProcessOptions\relax
