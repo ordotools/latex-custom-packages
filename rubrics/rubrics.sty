@@ -20,9 +20,19 @@
 \RequirePackage{xcolor}
 \RequirePackage{tabularx}
 \RequirePackage{booktabs}
+\RequirePackage[
+  right=1in,
+  left=1in,
+  top=.5in,
+  bottom=.75in,
+]{geometry}
+\RequirePackage{framed}
+\RequirePackage[Rejne]{fncychap}
+\RequirePackage{multicol}
 
-\RequirePackage{gregoriotex}
+\DeclareOption{chant}{\RequirePackage{gregoriotex}}
 % TODO: find a way to customize this for small chant snippets
+\ProcessOptions\relax
 
 \endinput
 %%
