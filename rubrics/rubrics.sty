@@ -50,11 +50,11 @@
 % TODO: find a way to customize this for small chant snippets
 \ProcessOptions\relax
 
-%\renewcommand{\section}{1}{
-  %\textcolor{red}{\section{#1}}
-%}
+\RequirePackage{titlesec}
 
-\addtokomafont{section}{\color{red}}
+\titleformat{\section}[wrap]
+{\normalfont\bfseries\color{red}}
+{\thesection.}{}{}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
