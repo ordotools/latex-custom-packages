@@ -34,6 +34,27 @@
 % TODO: find a way to customize this for small chant snippets
 \ProcessOptions\relax
 
+\newcommand{\abstract}[1]{
+  \chapter*{Abstract}
+  \begin{multicols}{2}
+    #1 
+  \end{multicols}
+}
+
+\newcommand{\chap}[2]{
+  \chapter{#1}
+  \begin{multicols}{2}
+    #2 
+  \end{multicols}
+}
+
+\newcommand{\references}[1]{
+  \chapter*{References}
+  \begin{multicols}{2}
+    #1 
+  \end{multicols}
+}
+
 \endinput
 %%
 %% End of file `rubrics.sty'.
