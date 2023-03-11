@@ -46,7 +46,8 @@
 \RequirePackage{gregoriosyms}
 
 \RequirePackage{titlesec}
-\titleformat{\section}{\color{red}\normalfont\normalfont}{\color{black}\thesection}{1em}{}
+%\titleformat{\section}{\color{red}\normalfont\normalfont}{\color{black}\thesection}{1em}{}
+\titleformat{\section}{\color{red}\Large}{}{1em}{}
 
 \RequirePackage{multicol}
 \setlength{\columnseprule}{0.5pt}
@@ -57,6 +58,9 @@
 % TODO: find a way to customize this for small chant snippets
 
 \ProcessOptions\relax
+
+\newcounter{rubrics}
+\newcommand\rubric{\color{red}\textbf{\stepcounter{rubrics}\therubrics. }}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
