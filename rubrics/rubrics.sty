@@ -59,7 +59,6 @@
 \setlength{\columnseprule}{0.5pt}
 \def\columnseprulecolor{\color{red}}
 
-
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
 % TODO: find a way to customize this for small chant snippets
 
@@ -101,7 +100,7 @@
 %\gredefbarredsymbol{rbar}{\textcolor{red}{\normalfont R}}{\textcolor{red}{greRBarSmall}}{12}{1.7mm}{0.1mm}
 
 \newcommand{\rbar}[0]{
-  \textcolor{red}{\gothRbar.}
+  \textcolor{red}{\color{red}\gothRbar.}
 }
 
 \newcommand{\vbar}[0]{
