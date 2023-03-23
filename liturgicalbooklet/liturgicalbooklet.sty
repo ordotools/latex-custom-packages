@@ -1,0 +1,80 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{liturgicalbooklet}[2022/01/16 Liturgical Booklet]
+
+\RequirePackage{libertine}
+\RequirePackage{xcolor}
+\RequirePackage{lettrine}
+\RequirePackage[latin]{babel}
+\RequirePackage[paperwidth=4.25in,paperheight=6.87in]{geometry}
+\geometry{top=0.25in, bottom=0.25in, inner=0.625in, outer=0.25in}
+\RequirePackage{microtype}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MAKE THE CENTER LINE RED %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setlength{\columnseprule}{0.4pt}
+\newcommand{\latexcolumnseprulecolor}{\color{red}}
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\@outputdblcol{% find
+  \normalcolor\vrule
+}{% and replace by
+  \latexcolumnseprulecolor\vrule
+}{% success
+}{% failure
+  \@latex@warning{Patching \string\@outputdblcol\space failed}%
+}
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MAKE RED MARGINS %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+% TODO work on this...
+\RequirePackage{tikzpagenodes}
+\RequirePackage[contents={}]{background}
+\AddEverypageHook{%
+  \tikz[remember picture,overlay,red]{
+    \draw (current page text area.north east) -- (current page text area.north west)
+          -- (current page text area.south west) -- (current page text area.south east) -- cycle;
+  }
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% TAKE CARE OF THE FONTS AND LIGATURES %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setmainfont[Ligatures=TeX]{Linux Libertine O}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CUSTOM COMMANDS FOR RUBRICS AND PRAYERS %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% title for psalms, lessons and orations
+\newcommand{\redtitle}[1]{
+	\begin{center}
+		{
+			\color{red}
+			#1
+		}
+	\end{center}
+}
+
+% write an antiphon and psalm
+\newcommand{\antps}[5]{
+	{\color{red} Ant.} #1. 
+	#4
+	{\color{red} Ant.} #2
+}
+
+% dropcap for psalms and 2nd, 3rd lessons of nocturnes
+\newcommand{\dropII}[2]{
+	\lettrine[lines=2]{\color{red} #1}{#2}
+}
+
+% dropcap for 1st lessons of nocturnes
+\newcommand{\dropI}[2]{
+	\lettrine[lines=3]{\color{black} #1}{#2}
+}
+
