@@ -8,11 +8,9 @@
 \gresetgregpath{{../gabc/}}
 
 \newcommand\psalm[3][g]{
-    \newcommand\gabc{\import{gabc/}{#2-#3}}
-    \newcommand\mytex{\import{#1/}{#2-#3}}
     {\color{red}\small Psalmus #2.}
     \gregorioscore[a]{#2-#3}
-    \mytex
+    \import{#1/}{#2-#3}
 }
 
 
