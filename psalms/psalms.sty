@@ -2,16 +2,16 @@
 \ProvidesPackage{psalms}[2014/08/21 psalms]
 
 \RequirePackage{import}
-\RequirePackage{ifthen}
+%\RequirePackage{ifthen}
 \RequirePackage[autocompile]{gregoriotex}
 
 \gresetgregpath{{../gabc/}}
 
-\newcommand\psalm[3][g]{
-    {\color{red}\small Psalmus #2.}
-    \gregorioscore[a]{#2-#3}
-    \import{#1/}{#2-#3}
+\newcommand\psalm[4][g][]{
+    %% \psalm[<gloria/no gloria>][<title>]{<psalm>}{<mode>}
+    \ifx&#2&\else{\color{red}\small Psalmus #3.}\fi
+    \gregorioscore[a]{#3-#4}
+    \import{#1/}{#3-#4}
 }
 
-
-\ProcessOptions\relax
+%\ProcessOptions\relax
