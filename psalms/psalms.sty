@@ -7,15 +7,15 @@
 
 \gresetgregpath{{../gabc/}}
 
-\newcommand\psalm[4][g][]{
+\newcommand\psalm[3][g][]{
     %% \psalm[<gloria/no gloria>][<title>]{<psalm>}{<mode>}
-    \ifx&#2&
+    %\ifx&#2&
 
-    \else
-        {\color{red}\small Psalmus #3.}
-    \fi
-    \gregorioscore[a]{#3-#4}
-    \import{#1/}{#3-#4}
+    %\else
+        %{\color{red}\small Psalmus #3.}
+    %\fi
+    \gregorioscore[a]{#2-#3}
+    \import{#1/}{#2-#3}
 }
 
 %\ProcessOptions\relax
