@@ -13,7 +13,6 @@
 \author{Fr. Gregory R. Barnes}
 \date{\today}
 
-\RequirePackage{microtype}
 \RequirePackage[T1]{fontenc}
 \RequirePackage{tgpagella}
 \RequirePackage{pifont}
@@ -60,6 +59,7 @@
 \def\columnseprulecolor{\color{red}}
 
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
+\DeclareOption{final}{\RequirePackage{microtype}}
 % TODO: find a way to customize this for small chant snippets
 
 \ProcessOptions\relax
@@ -77,6 +77,7 @@
   \end{multicols}
 }
 
+% maybe use a \renewcommand here
 \newcommand{\chap}[2]{
   \chapter{#1}
   \begin{multicols}{2}
