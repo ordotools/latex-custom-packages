@@ -1,80 +1,231 @@
-\NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{liturgicalbooklet}[2022/01/16 Liturgical Booklet]
+\ProvidesPackage{liturgical-booklet}
 
-\RequirePackage{libertine}
-\RequirePackage{xcolor}
-\RequirePackage{lettrine}
+\settypeblocksize{7in}{3.8in}{*}
+\setlrmargins{.6in}{*}{*}
+\setulmargins{.6in}{*}{*}
+\checkandfixthelayout
+
+\pretitle{
+    \begin{center}
+	% leftover from the Tenebrae booklets:
+	% \scshape The Office of Tenebr\ae\ of\linebreak\vspace{.125in}
+	\normalfont\Huge
+    }
+    % the title is defined in each main file
+\posttitle{\end{center}}
+\preauthor{
+    \vfill
+    \begin{center}\small
+    \textit{Property of}\\
+    % TODO: I want this to be swashed eventually
+}
+    \author{Queen of All Saints Chapel}
+\postauthor{
+    \end{center}
+}
+\date{} % the date is no use in this context
+
+%\RequirePackage{showframe}
+
+%%% GREGORIOTEX %%%
+\RequirePackage[autocompile]{gregoriotex} % make this an option
+\gresetlinecolor{gregoriocolor}
+\gresetinitiallines{1}
+\gresetannotationvalign{bottom}
+\grechangestyle{modeline}{\small} \grechangestyle{annotation}{\small}
+% \gresetgregpath{{./antiphons/}}
+% \gresetgregpath{{./responsories/}}
+
+\RequirePackage{psalms} % Custom... nice
+
+\RequirePackage{ifthen}
+\RequirePackage[super]{nth}
 \RequirePackage[latin]{babel}
-\RequirePackage[paperwidth=4.25in,paperheight=6.87in]{geometry}
-\geometry{top=0.25in, bottom=0.25in, inner=0.625in, outer=0.25in}
+\RequirePackage{fontspec}
+\RequirePackage[T1]{fontenc}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{Minion3}
+\RequirePackage{lettrine}
+
+\RequirePackage{titlesec}
+
+\RequirePackage{import}
+
+% must be after gregoriotex -- for the final run
 \RequirePackage{microtype}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% MAKE THE CENTER LINE RED %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapterstyle{southall}
 
-\setlength{\columnseprule}{0.4pt}
-\newcommand{\latexcolumnseprulecolor}{\color{red}}
-\usepackage{etoolbox}
-\makeatletter
-\patchcmd\@outputdblcol{% find
-  \normalcolor\vrule
-}{% and replace by
-  \latexcolumnseprulecolor\vrule
-}{% success
-}{% failure
-  \@latex@warning{Patching \string\@outputdblcol\space failed}%
-}
-\makeatother
+\titleformat{\subsection}
+{\centering\small\color{red}}{\thesection}{0.5em}{}
 
-%%%%%%%%%%%%%%%%%%%%%%%%
-%%% MAKE RED MARGINS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%
+% todo: why is this not working?
+%\titlespacing*{\subsection}
+%{0pt}{1\smallskip}{1\smallskip}
 
-% TODO work on this...
-\RequirePackage{tikzpagenodes}
-\RequirePackage[contents={}]{background}
-\AddEverypageHook{%
-  \tikz[remember picture,overlay,red]{
-    \draw (current page text area.north east) -- (current page text area.north west)
-          -- (current page text area.south west) -- (current page text area.south east) -- cycle;
-  }
-}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\black}[1]{\textcolor{black}{#1}}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% TAKE CARE OF THE FONTS AND LIGATURES %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\setmainfont[Ligatures=TeX]{Linux Libertine O}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% CUSTOM COMMANDS FOR RUBRICS AND PRAYERS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% title for psalms, lessons and orations
 \newcommand{\redtitle}[1]{
-	\begin{center}
-		{
-			\color{red}
-			#1
-		}
-	\end{center}
+    \subsection*{#1}
+	%\begin{center}
+		%{\small\color{red}#1}
+	%\end{center}
+	}
+
+\newcommand{\rubric}[1]{
+	\begin{raggedright}
+		%\vspace{1em}
+	    \smallskip
+		{\color{red}\footnotesize #1}
+		\smallskip
+	\end{raggedright}
 }
 
-% write an antiphon and psalm
-\newcommand{\antps}[5]{
-	{\color{red} Ant.} #1. 
-	#4
-	{\color{red} Ant.} #2
+\newcounter{antiphon}\setcounter{antiphon}{1}
+\newcounter{allantiphon}\setcounter{allantiphon}{1}
+\newcounter{responsory}\setcounter{responsory}{1}
+\newcounter{lesson}\setcounter{lesson}{1}
+
+
+\newcommand{\buildpsalm}[3]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\gresetannotationvalign{bottom}
+	\greannotation{Ant. \theantiphon}
+	\gresetgregpath{{./antiphons/}}
+	\greannotation{#3}
+	\gregorioscore{#1}
+	\subsection{Psalm #2.}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\psalm[ng]{#2}{#3} % --> "ng" sets the psalm to have no gloria
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand{\buildcanticlem}[1]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\greannotation{Ant. \theantiphon}
+	\gresetgregpath{{./antiphons/}}
+	\gresetannotationvalign{bottom}
+	\gregorioscore{#1}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\subsection{Canticle of Moses.}
+	\gresetgregpath{{./canticles/}}
+	\gregorioscore{canticle-moses}
+	\import{./canticles/}{Canticum Moysis (Exod)-4A.tex}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand{\buildcanticleh}[1]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\greannotation{Ant. \theantiphon}
+	\greannotation{1 f.}
+	\gresetgregpath{{./antiphons/}}
+	\gresetannotationvalign{bottom}
+	\gregorioscore{#1}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\subsection{Canticle of Habacuc.}
+	\gresetgregpath{{./canticles/}}
+	\gregorioscore{canticle-habacuc}
+	\import{./canticles/}{habacuc.tex}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand{\buildcanticlee}[1]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\greannotation{Ant. \theantiphon}
+	\greannotation{2 D.}
+	\gresetgregpath{{./antiphons/}}
+	\gresetannotationvalign{bottom}
+	\gregorioscore{#1}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\subsection{Canticle of Ezechias.}
+	\gresetgregpath{{./canticles/}}
+	\gregorioscore{ez}
+	\import{./canticles/}{ez.tex}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand{\buildcanticlez}[1]{
+
+    \rubric{During the singing of the \black{Benedictus,} the lights of the
+    church are put out and the six candles on the altar are extinguished, one
+    every second verse. During the repetition of the antiphon \black{Traditur,}
+    the last candle is taken from the hearse and placed behind the altar at the
+    Epistle side.}
+
+	\gresetannotationvalign{bottom}
+	\greannotation{At Bened.}
+	\greannotation{Ant. 1.g}
+	\gresetgregpath{{./antiphons/}}
+	\gregorioscore{#1}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\subsection{Canticle of Zachary.}
+	\gresetgregpath{{./canticles/}}
+	\gregorioscore{Benedictus-solemn1g}
+	\import{./canticles/}{Benedictus-solemn1g.tex}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand\lesson{
+    \subsection{Lesson \MakeUppercase{\romannumeral \thelesson.}}
+    \stepcounter{lesson}
 }
 
-% dropcap for psalms and 2nd, 3rd lessons of nocturnes
-\newcommand{\dropII}[2]{
-	\lettrine[lines=2]{\color{red} #1}{#2}
+\newcommand\responsory[2]{
+    \gresetgregpath{{./responsories/}}
+    \greannotation{Resp. \theresponsory}
+    \stepcounter{responsory}
+    \greannotation{#2}
+    \gregorioscore{#1}
+    }
+
+\newcommand\christus[1]{
+
+    \rubric{The cantors intone the \black{Christus.}}
+
+	\gresetinitiallines{1}
+    \gresetgregpath{{./christus/}}
+    \gregorioscore{christus-#1}
+
+
+    \rubric{\black{Pater noster} in silence.}
+    }
+
+\newcommand{\versicle}[2]{
+	\gresetinitiallines{0}
+	\gabcsnippet{(c4) <c><sp>V/</sp>.</c> #1 (::)}
+	\gabcsnippet{(c4) <c><sp>R/</sp>.</c> #2 (::)}
+	\gresetinitiallines{1}
 }
 
-% dropcap for 1st lessons of nocturnes
-\newcommand{\dropI}[2]{
-	\lettrine[lines=3]{\color{black} #1}{#2}
-}
+\setlength{\parindent}{0pt}
+\gresetbracerendering{font}
+
+\newcommand\respice{
+
+    \subsection{Prayer}
+
+    \rubric{Chanted in a low, grave, voice, with no other inflexion than the
+    lowering of the voice a tone on the last syllable.}
+
+    \lettrine[lraise=0.1,nindent=0em,slope=-0.5em]{R}{\'espice,} qu\'\ae sumus
+    D\'omine, super hanc fam\'iliam tuam, pro qua D\'ominus noster Jesus
+    Christus non dubit\'avit m\'anibus tradi noc\'entium, et crucis sub\'ire
+    torm\'entum. \red{\small silently} Qui tecum vivit et regnat in unitáte
+    Spíritus Sancti, Deus, per ómnia s\'\ae cula s\ae culórum. Amen.
+
+    \rubric{At the end of this prayer, a noise is made by knocking the stalls
+    of the choir until the lighted candle re-appears from behind the altar and
+    is placed on the hearse. All then rise and retire in silence.}
+    }
 
