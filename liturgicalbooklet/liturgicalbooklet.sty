@@ -67,7 +67,9 @@
 	{\color{gregoriocolor}#1}
 }
 
-\newcommand{\black}[1]{\textcolor{black}{#1}}
+\newcommand{\black}[1]{
+	{\color{black}#1}
+}
 
 \newcommand{\vbar}[0]{
 	{\color{gregoriocolor}\Vbar.}
@@ -75,14 +77,11 @@
 
 \newcommand{\rbar}[0]{
 	{\color{gregoriocolor}\Rbar.}
-	}
+}
 
 \newcommand{\redtitle}[1]{
-    \subsection*{#1}
-	%\begin{center}
-		%{\small\color{red}#1}
-	%\end{center}
-	}
+	\subsection*{#1}
+}
 
 \newcommand{\versicle}[2]{
 	\gresetinitiallines{0}
@@ -93,12 +92,15 @@
 
 \newcommand{\rubric}[1]{
 	\begin{raggedright}
-		%\vspace{1em}
 		\smallskip
 		{\color{gregoriocolor}\footnotesize #1}
 		\smallskip
 	\end{raggedright}
-	}
+}
+
+\newcommand{\inlinerubric}[1]{
+	{\color{gregoriocolor}\footnotesize #1}
+}
 
 \newcounter{antiphon}\setcounter{antiphon}{1}
 \newcounter{allantiphon}\setcounter{allantiphon}{1}
