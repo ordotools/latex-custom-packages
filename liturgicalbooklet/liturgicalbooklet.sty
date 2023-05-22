@@ -46,10 +46,10 @@
 \defaultfontfeatures{Ligatures=TeX}
 \setmainfont{Minion3}
 \RequirePackage{lettrine}
-
+\renewcommand{\LettrineFontHook}{\fontfamily{lmr}\color{gregoriocolor}}
 \RequirePackage{titlesec}
-
 \RequirePackage{import}
+\RequirePackage{verse}
 
 % must be after gregoriotex -- for the final run
 \RequirePackage{microtype}
