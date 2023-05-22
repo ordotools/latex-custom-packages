@@ -56,7 +56,7 @@
 
 \chapterstyle{southall}
 
-\titleformat{\subsection}
+\titleformat{\subsection} % yeah, this does not work
 {\centering\small\color{red}}{\thesection}{0.5em}{}
 
 % todo: why is this not working?
@@ -66,6 +66,9 @@
 \newcommand{\red}[1]{\textcolor{red}{#1}}
 \newcommand{\black}[1]{\textcolor{black}{#1}}
 
+\newcommand\vbar[0]{\red{\Vbar.}
+\newcommand\rbar[0]{\red{\Rbar.}
+
 \newcommand{\redtitle}[1]{
     \subsection*{#1}
 	%\begin{center}
@@ -73,14 +76,21 @@
 	%\end{center}
 	}
 
+\newcommand{\versicle}[2]{
+	\gresetinitiallines{0}
+	\gabcsnippet{(c4) <c><sp>V/</sp>.</c> #1 (::)}
+	\gabcsnippet{(c4) <c><sp>R/</sp>.</c> #2 (::)}
+	\gresetinitiallines{1}
+}
+
 \newcommand{\rubric}[1]{
 	\begin{raggedright}
 		%\vspace{1em}
-	    \smallskip
+		\smallskip
 		{\color{red}\footnotesize #1}
 		\smallskip
 	\end{raggedright}
-}
+	}
 
 \newcounter{antiphon}\setcounter{antiphon}{1}
 \newcounter{allantiphon}\setcounter{allantiphon}{1}
@@ -201,12 +211,6 @@
     \rubric{\black{Pater noster} in silence.}
     }
 
-\newcommand{\versicle}[2]{
-	\gresetinitiallines{0}
-	\gabcsnippet{(c4) <c><sp>V/</sp>.</c> #1 (::)}
-	\gabcsnippet{(c4) <c><sp>R/</sp>.</c> #2 (::)}
-	\gresetinitiallines{1}
-}
 
 \setlength{\parindent}{0pt}
 \gresetbracerendering{font}
