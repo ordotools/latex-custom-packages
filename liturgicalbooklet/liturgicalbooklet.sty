@@ -5,25 +5,37 @@
 \setulmargins{.6in}{*}{*}
 \checkandfixthelayout
 
-\pretitle{
-    \begin{center}
-	% leftover from the Tenebrae booklets:
-	% \scshape The Office of Tenebr\ae\ of\linebreak\vspace{.125in}
-	\normalfont\Huge
-    }
-    % the title is defined in each main file
-\posttitle{\end{center}}
-\preauthor{
-    \vfill
-    \begin{center}\small
-    \textit{Property of}\\
-    % TODO: I want this to be swashed eventually
+\RequirePackage{graphix}
+\graphicspath{ {./images/} }
+
+\newcommand{\mytitle}[2]{
+	\pretitle{
+		\begin{center}
+		% leftover from the Tenebrae booklets:
+		% \scshape The Office of Tenebr\ae\ of\linebreak\vspace{.125in}
+		\normalfont\Huge
+	}
+	\title{#1}
+	    % the title is defined in each main file
+	\posttitle{
+	    \end{center}
+	    \begin{figure}[h]
+		    \noindent\includegraphics[width=\textwidth]{#2}
+	    \end{figure}
+	    \vfill
+	    }
+	\preauthor{
+	    \vfill
+	    \begin{center}\small
+	    \textit{Property of}\\
+	    % TODO: I want this to be swashed eventually
+	}
+	    \author{Queen of All Saints Chapel}
+	\postauthor{
+	    \end{center}
+	}
+	\date{} % the date is no use in this context
 }
-    \author{Queen of All Saints Chapel}
-\postauthor{
-    \end{center}
-}
-\date{} % the date is no use in this context
 
 %\RequirePackage{showframe}
 
