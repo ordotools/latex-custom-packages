@@ -73,9 +73,9 @@
 %
 \newcommand{\custommarginnote}[1]{%
     \ifodd\value{multicols}%
-        \marginnote{\raggedright #1}%
+        \marginpar[right text]{#1}%
     \else%
-        \marginnote{\raggedleft #1}%
+        \marginpar[left text]{#1}%
     \fi%
 }
 
