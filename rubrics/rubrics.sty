@@ -8,15 +8,12 @@
 % 
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{rubrics}
-  [2023/02/09 v0.01 LaTeX package for ceremony notes.]
+  [2023/02/09 v1.00 LaTeX package for ceremony notes.]
 
 \author{Fr. Gregory R. Barnes}
 \date{\today}
 
-% \RequirePackage[T1]{fontenc}
-% \RequirePackage{tgpagella}
 \RequirePackage{fontspec}
-% \setmainfont[Ligatures=Discretionary]{Minion3}
 \setmainfont{Minion3}
 \RequirePackage[american]{babel}
 \RequirePackage{pifont}
@@ -31,45 +28,48 @@
   bottom=.75in,
 ]{geometry}
 \RequirePackage{framed}
+
+% TODO: we might want to improve the chapter heads. Get rid 
+% of the name "chapter" at the beginning of each.
 \RequirePackage[Rejne]{fncychap}
 
 \RequirePackage{parskip}
 
-\makeatletter
-  %\ChNameVar{\centering\Huge\rm\bfseries}
-  %\ChNumVar{\Huge}\ChTitleVar{\centering\Huge\rm}
-  %\ChNameUpperCase
-  %\ChTitleUpperCase
-  %\ChRuleWidth{1pt}
-  %\renewcommand{\DOCH}{%
-    %\setlength{\fboxrule}{\RW} % Let fbox lines be controlled by
-                               %% \ChRuleWidth
-    %\fbox{\CNV\FmN{\@chapapp}\space \CNoV\thechapter}\par\nobreak
-    %\vskip 40\p@}
-\makeatother
+% \makeatletter
+%   %\ChNameVar{\centering\Huge\rm\bfseries}
+%   %\ChNumVar{\Huge}\ChTitleVar{\centering\Huge\rm}
+%   %\ChNameUpperCase
+%   %\ChTitleUpperCase
+%   %\ChRuleWidth{1pt}
+%   %\renewcommand{\DOCH}{%
+%     %\setlength{\fboxrule}{\RW} % Let fbox lines be controlled by
+%                                %% \ChRuleWidth
+%     %\fbox{\CNV\FmN{\@chapapp}\space \CNoV\thechapter}\par\nobreak
+%     %\vskip 40\p@}
+% \makeatother
 
 \RequirePackage{gregoriosyms}
 
 \RequirePackage{titlesec}
-
-%\titleformat{\section}{\color{red}\normalfont\normalfont}{\color{black}\thesection}{1em}{}
-
 \titleformat{\section}{\color{red}\normalfont\normalsize\scshape\centering}{}{1em}{}
-
-%\titleformat{\section}{\color{red}\normalfont\normalfont}{}{1em}{}
 
 \RequirePackage{multicol}
 \setlength{\columnseprule}{0.5pt}
 \def\columnseprulecolor{\color{red}}
 
+\RequirePackage{marginnote}
+
+% TODO: find a way to customize this for small chant snippets
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
 \DeclareOption{final}{\RequirePackage{microtype}}
-% TODO: find a way to customize this for small chant snippets
 
 \ProcessOptions\relax
 
 \newcounter{rubrics}
 \newcommand\rubric{{\color{red}\textbf{\stepcounter{rubrics}\therubrics. }}}
+\newcommand\rubricC{{\color{red}\textbf{\stepcounter{rubrics}\therubrics.\marginnote{C} }}}
+\newcommand\rubricD{{\color{red}\textbf{\stepcounter{rubrics}\therubrics.\marginnote{D} }}}
+\newcommand\rubricSD{{\color{red}\textbf{\stepcounter{rubrics}\therubrics.\marginnote{SD} }}}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
