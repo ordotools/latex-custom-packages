@@ -60,15 +60,23 @@
 \RequirePackage{marginnote}
 % \RequirePackage{zref-savepos}
 
+% \newcommand{\custommarginnote}[1]{%
+%     \strictpagecheck % Ensure correct margin note placement
+%     \ifnumodd{\thepage}{%
+%         \marginnote{\raggedright #1}%
+%     }{%
+%         \reversemarginpar % Place margin note on the left for even pages
+%         \marginnote{\raggedleft #1}%
+%         \normalmarginpar % Restore default margin note placement
+%     }%
+% }
+%
 \newcommand{\custommarginnote}[1]{%
-    \strictpagecheck % Ensure correct margin note placement
-    \ifnumodd{\thepage}{%
+    \ifodd\value{multicols}%
         \marginnote{\raggedright #1}%
-    }{%
-        \reversemarginpar % Place margin note on the left for even pages
+    \else%
         \marginnote{\raggedleft #1}%
-        \normalmarginpar % Restore default margin note placement
-    }%
+    \fi%
 }
 
 % TODO: find a way to customize this for small chant snippets
