@@ -57,14 +57,9 @@
 \setlength{\columnseprule}{0.5pt}
 \def\columnseprulecolor{\color{red}}
 
-% \RequirePackage{marginnote}
 \RequirePackage{zref-savepos}
 
 \newcounter{marginParCounter} \setcounter{marginParCounter}{1}
-% \newcommand\celebrantMarginNote[1]{
-%     \stepcounter{marginParCounter}
-%     \putmarginpar{labelPrefix:\arabic{marginParCounter}}{#1}
-% }
 
 \def\putmarginpar#1{
     \stepcounter{marginParCounter}
@@ -72,10 +67,10 @@
     \ifnum20432158>\number\zposx{\arabic{marginParCounter}}
         \hbox to 0pt{\hskip\dimexpr-\zposx{\arabic{marginParCounter}}sp +0.5cm \relax #1}%
   \else
-      \hbox to 0pt{\hskip4cm #1}%
+      \hbox to 0pt{#1}%
+        % \hskip4cm
   \fi%
 }
-
 
 % TODO: find a way to customize this for small chant snippets
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
