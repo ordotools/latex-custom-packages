@@ -69,6 +69,12 @@
   \fi%
 }
 
+\newcounter{marginParCounter} \setcounter{marginParCounter}{1}
+\newcommand{\marginMark}[#1]{
+    \stepcounter{marginParCounter}
+    \putmarginpar{labelPrefix:\arabic{marginParCounter}}{#1}
+}
+
 % TODO: find a way to customize this for small chant snippets
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
 \DeclareOption{final}{\RequirePackage{microtype}}
@@ -77,9 +83,9 @@
 
 \newcounter{rubrics}
 \newcommand\rubric{{\color{red}\textbf{\stepcounter{rubrics}\therubrics. }}}
-\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\putmarginpar{C} }}
-\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\putmarginpar{D} }}
-\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\putmarginpar{SD} }}
+\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\marginMark{C} }}
+\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\marginMark{D} }}
+\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\marginMark{SD} }}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
