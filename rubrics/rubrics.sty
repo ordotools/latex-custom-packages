@@ -70,9 +70,9 @@
     \stepcounter{marginParCounter}
     \zsavepos{#1}
     \ifnum20432158>\number\zposx{#1}
-        \hbox to 0pt{\hskip\dimexpr-\zposx{#1}sp +0.5cm \relax labelPrefix:\arabic{marginParCounter}}%
+        \hbox to 0pt{\hskip\dimexpr-\zposx{#1}sp +0.5cm \relax \arabic{marginParCounter}}%
   \else
-      \hbox to 0pt{\hskip4cm labelPrefix:\arabic{marginParCounter}}%
+      \hbox to 0pt{\hskip4cm \arabic{marginParCounter}}%
   \fi%
 }
 
