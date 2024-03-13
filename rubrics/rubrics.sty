@@ -70,7 +70,7 @@
 }
 
 \newcounter{marginParCounter} \setcounter{marginParCounter}{1}
-\newcommand{\marginMark}[#1]{
+\newcommand\celebrantMarginNote[#1]{
     \stepcounter{marginParCounter}
     \putmarginpar{labelPrefix:\arabic{marginParCounter}}{#1}
 }
@@ -83,9 +83,9 @@
 
 \newcounter{rubrics}
 \newcommand\rubric{{\color{red}\textbf{\stepcounter{rubrics}\therubrics. }}}
-\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\marginMark{C} }}
-\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\marginMark{D} }}
-\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\marginMark{SD} }}
+\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\celebrantMarginNote{C} }}
+\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\celebrantMarginNote{D} }}
+\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\celebrantMarginNote{SD} }}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
