@@ -65,10 +65,10 @@
     \stepcounter{marginParCounter}
     \zsavepos{\arabic{marginParCounter}}
     \ifnum20432158>\number\zposx{\arabic{marginParCounter}}
-        \hbox to 0pt{\hskip\dimexpr-\zposx{\arabic{marginParCounter}}sp +0.5cm \relax\raggedright #1}%
+        \hbox to 0pt{\hskip\dimexpr-\zposx{\arabic{marginParCounter}}sp +0.5cm \relax #1}%
   \else
-      \hbox to 0pt{\hskip 4cm \raggedleft #1}%
-        \hskip4cm
+      \hbox to 0pt{\hskip 4cm test#1}%
+        % \hskip4cm
   \fi
 }
 
