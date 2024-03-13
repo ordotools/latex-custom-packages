@@ -60,20 +60,22 @@
 % \RequirePackage{marginnote}
 \RequirePackage{zref-savepos}
 
+\newcounter{marginParCounter} \setcounter{marginParCounter}{1}
+% \newcommand\celebrantMarginNote[1]{
+%     \stepcounter{marginParCounter}
+%     \putmarginpar{labelPrefix:\arabic{marginParCounter}}{#1}
+% }
+
 \def\putmarginpar#1#2{
-    \zsavepos{##1}
-    \ifnum20432158>\number\zposx{##1}
-        \hbox to 0pt{\hskip\dimexpr-\zposx{##1}sp +0.5cm \relax##2}%
+    \stepcounter{marginParCounter}
+    \zsavepos{#1}
+    \ifnum20432158>\number\zposx{#1}
+        \hbox to 0pt{\hskip\dimexpr-\zposx{#1}sp +0.5cm \relax labelPrefix:\arabic{marginParCounter}}%
   \else
-      \hbox to 0pt{\hskip4cm ##2}%
+      \hbox to 0pt{\hskip4cm labelPrefix:\arabic{marginParCounter}}%
   \fi%
 }
 
-\newcounter{marginParCounter} \setcounter{marginParCounter}{1}
-\newcommand\celebrantMarginNote[1]{
-    \stepcounter{marginParCounter}
-    \putmarginpar{labelPrefix:\arabic{marginParCounter}}{#1}
-}
 
 % TODO: find a way to customize this for small chant snippets
 \DeclareOption{chant}{\RequirePackage{gregoriotex}}
@@ -83,9 +85,9 @@
 
 \newcounter{rubrics}
 \newcommand\rubric{{\color{red}\textbf{\stepcounter{rubrics}\therubrics. }}}
-\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\celebrantMarginNote{C} }}
-\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\celebrantMarginNote{D} }}
-\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\celebrantMarginNote{SD} }}
+\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\putmarginpar{C} }}
+\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\putmarginpar{D} }}
+\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\putmarginpar{SD} }}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
