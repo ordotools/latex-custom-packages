@@ -57,26 +57,16 @@
 \setlength{\columnseprule}{0.5pt}
 \def\columnseprulecolor{\color{red}}
 
-\RequirePackage{marginnote}
-% \RequirePackage{zref-savepos}
+% \RequirePackage{marginnote}
+\RequirePackage{zref-savepos}
 
-% \newcommand{\custommarginnote}[1]{%
-%     \strictpagecheck % Ensure correct margin note placement
-%     \ifnumodd{\thepage}{%
-%         \marginnote{\raggedright #1}%
-%     }{%
-%         \reversemarginpar % Place margin note on the left for even pages
-%         \marginnote{\raggedleft #1}%
-%         \normalmarginpar % Restore default margin note placement
-%     }%
-% }
-%
-\newcommand{\custommarginnote}[1]{%
-    \ifodd\value{multicols}%
-        \marginpar[right text]{#1}%
-    \else%
-        \marginpar[left text]{#1}%
-    \fi%
+\def\putmarginpar#1#2{
+    \zsavepos{#1}
+    \ifnum20432158>\number\zposx{#1}
+        \hbox to 0pt{\hskip\dimexpr-\zposx{#1}sp +0.5cm \relax#2}%
+  \else
+      \hbox to 0pt{\hskip4cm #2}%
+  \fi%
 }
 
 % TODO: find a way to customize this for small chant snippets
@@ -87,9 +77,9 @@
 
 \newcounter{rubrics}
 \newcommand\rubric{{\color{red}\textbf{\stepcounter{rubrics}\therubrics. }}}
-\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\custommarginnote{C} }}
-\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\custommarginnote{D} }}
-\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\custommarginnote{SD} }}
+\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\putmarginpar{C} }}
+\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\putmarginpar{D} }}
+\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\putmarginpar{SD} }}
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
