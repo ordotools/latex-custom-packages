@@ -60,12 +60,12 @@
 % \RequirePackage{marginnote}
 \RequirePackage{zref-savepos}
 
-\def\putmarginpar#1#2{
-    \zsavepos{#1}
-    \ifnum20432158>\number\zposx{#1}
-        \hbox to 0pt{\hskip\dimexpr-\zposx{#1}sp +0.5cm \relax#2}%
+\def\putmarginpar##1##2{
+    \zsavepos{##1}
+    \ifnum20432158>\number\zposx{##1}
+        \hbox to 0pt{\hskip\dimexpr-\zposx{##1}sp +0.5cm \relax##2}%
   \else
-      \hbox to 0pt{\hskip4cm #2}%
+      \hbox to 0pt{\hskip4cm ##2}%
   \fi%
 }
 
