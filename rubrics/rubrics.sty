@@ -66,11 +66,11 @@
     \zsavepos{a:\arabic{marginParCounter}}
     \ifnum20432158>\number\zposx{a:\arabic{marginParCounter}}
         % controls the left column
-        \hbox to 0pt{\hskip\dimexpr-\zposx{a:\arabic{marginParCounter}}sp +0.5cm \relax #1}
-  \else
-      % controls the right margin
-      \hbox to 0pt{\hskip4cm #1}
-  \fi
+        \hbox to 0pt{\hskip\dimexpr-\zposx{a:\arabic{marginParCounter}}sp +5cm \relax #1}
+    \else
+        % controls the right margin
+        \hbox to 0pt{\hskip4cm #1}
+    \fi
 }
 
 % TODO: find a way to customize this for small chant snippets
