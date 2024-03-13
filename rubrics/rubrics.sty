@@ -65,11 +65,11 @@
     \stepcounter{marginParCounter}
     \zsavepos{\arabic{marginParCounter}}
     \ifnum20432158>\number\zposx{\arabic{marginParCounter}}
-        \hbox to 0pt{\hskip\dimexpr-\zposx{\arabic{marginParCounter}}sp +0.5cm \relax #1}%
+        \hbox to 0pt{\hskip\dimexpr-\zposx{\arabic{marginParCounter}}sp +0.5cm #1}%
   \else
-      \hbox to 0pt{#1}%
-        % \hskip4cm
-  \fi%
+      \hbox to 0pt{\hskip 4cm #1}%
+        \hskip4cm
+  \fi
 }
 
 % TODO: find a way to customize this for small chant snippets
