@@ -70,7 +70,7 @@
 }
 
 \newcounter{marginParCounter} \setcounter{marginParCounter}{1}
-\newcommand\celebrantMarginNote[#1]{
+\newcommand\celebrantMarginNote[1]{
     \stepcounter{marginParCounter}
     \putmarginpar{labelPrefix:\arabic{marginParCounter}}{#1}
 }
