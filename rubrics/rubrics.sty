@@ -31,7 +31,8 @@
 
 % TODO: we might want to improve the chapter heads. Get rid 
 % of the name "chapter" at the beginning of each.
-\RequirePackage[Rejne]{fncychap}
+% \RequirePackage[Rejne]{fncychap}
+\RequirePackage[Conny]{fncychap}
 
 \RequirePackage{parskip}
 
@@ -87,6 +88,16 @@
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
+  \begin{center}
+    \textit{#1}
+  \end{center}
+  \begin{multicols}{2}
+    #2 
+  \end{multicols}
+}
+
+\newcommand{\singleChap}[2]{
+  \chapter*{#1}
   \begin{center}
     \textit{#1}
   \end{center}
