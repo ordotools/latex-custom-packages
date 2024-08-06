@@ -2,6 +2,8 @@
 
 A collection of custom style packages, designed for personal use.
 
+- [Psalms](#psalms-package)
+
 ## How to use (macOS guide)
 
 There are a number of preparations that you must make in order that this work properly. Note that there are two ways
