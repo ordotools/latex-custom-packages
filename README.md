@@ -106,7 +106,38 @@ A very opinionated command:
 \psalm[<gloria/no gloria>][<title>]{<psalm>}{<mode>}
 ```
 
-Other options will be added as needed/requested.
+For example, ```\psalm[ng]{15}{7c}``` will set psalm XV to 7c without a Gloria.
+This command in itself, though opinionated, can be used with other commands to
+great effect. Here is an example from my
+[chant](https://github.com/corei8/chant) repository:
 
+```tex
+\newcounter{antiphon}\setcounter{antiphon}{1}
+\newcounter{allantiphon}\setcounter{allantiphon}{1}
 
+\newcommand{\buildpsalm}[3]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\gresetannotationvalign{bottom}
+	\greannotation{Ant. \theantiphon}
+	\gresetgregpath{{./antiphons/}}
+	\greannotation{#3}
+	\gregorioscore{#1}
+	\subsection{Psalm #2.}
+	\gresetinitiallines{0}
+	\psalm[ng]{#2}{#3}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+```
 
+**NOTE**
+
+Other options will be added as needed/requested (e.g., no color, no psalm
+title, numbers, etc.). There are still a few problems with the psalms, as I did
+not write the parser myself. Some of the more obscure tones are missing and
+there are some unusual renditions of others. I will be working on those soon
+and will perhaps be writing my own parser. To my knowledge, the text of the
+psalms is perfect, and much work has been done to get rid of some of the
+nuances that were present. bringing to my attention any typos that you may find
+will be much appreciated.
