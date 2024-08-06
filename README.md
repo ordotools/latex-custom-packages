@@ -94,7 +94,17 @@ git pull origin main
 To get the latest version of the styles, you must first enter the directory (either `~/Library/texmf/tex` or `/usr/local/texlive/texmf-local`, depending), and then you 
 have to execute `git pull origin main` again.
 
+---
 
+## Psalms Package
+
+A very opinionated command:
+
+```tex
+\psalm[<gloria/no gloria>][<title>]{<psalm>}{<mode>}
+```
+
+Other options will be added as needed/requested.
 
 
 
