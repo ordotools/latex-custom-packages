@@ -62,12 +62,13 @@
 
 \newcounter{marginParCounter} \setcounter{marginParCounter}{1}
 
+% TODO: this is a work in progress...
 \def\putmarginpar#1{
     \stepcounter{marginParCounter}
     \zsavepos{a:\arabic{marginParCounter}}
     \ifnum20432158>\number\zposx{a:\arabic{marginParCounter}}
         % controls the left column
-        \hbox to 0pt{\hskip\dimexpr-\zposx{a:\arabic{marginParCounter}}sp +5cm \relax #1}
+        \hbox to 0pt{\hskip\dimexpr-\zposx{a:\arabic{marginParCounter}}sp +0.5cm \relax #1}
     \else
         % controls the right margin
         \hbox to 0pt{\hskip4cm #1}
@@ -105,7 +106,7 @@
 
 % maybe use a \renewcommand here
 \newcommand{\chap}[2]{
-  \chapter{#1}
+  \chapter*{#1}
   \begin{multicols}{2}
     #2 
   \end{multicols}
