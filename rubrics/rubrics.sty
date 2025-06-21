@@ -29,10 +29,6 @@
 ]{geometry}
 \RequirePackage{framed}
 
-% TODO: we might want to improve the chapter heads. Get rid 
-% of the name "chapter" at the beginning of each.
-% \RequirePackage[Rejne]{fncychap}
-\RequirePackage[Conny]{fncychap}
 
 \RequirePackage{parskip}
 
@@ -49,10 +45,9 @@
 %     %\vskip 40\p@}
 % \makeatother
 
-\RequirePackage{gregoriosyms}
-
-\RequirePackage{titlesec}
-\titleformat{\section}{\color{red}\normalfont\normalsize\scshape\centering}{}{1em}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  COLUMNS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \RequirePackage{multicol}
 \setlength{\columnseprule}{0.5pt}
@@ -81,10 +76,63 @@
 \ProcessOptions\relax
 
 \newcounter{rubrics}
-\newcommand\rubric{{\color{red}\textbf{\stepcounter{rubrics}\therubrics. }}}
-\newcommand\rubricC{{\color{red}\textbf{\therubrics.}\putmarginpar{C} }}
-\newcommand\rubricD{{\color{red}\textbf{\therubrics.}\putmarginpar{D} }}
-\newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\putmarginpar{SD} }}
+
+\newcommand\formattedrubric{{\color{red}\textbf{\stepcounter{rubrics}\therubrics. }}}
+\newcommand\arubric{\stepcounter{rubrics}\therubrics}
+
+\newcommand\testrubric[0]{%
+    \subsection{\formattedrubric.}%
+}
+
+% TODO: get these working eventually, but might be really difficult with multicols...
+
+% \newcommand\rubricC{{\color{red}\textbf{\therubrics.}\putmarginpar{C} }}
+% \newcommand\rubricD{{\color{red}\textbf{\therubrics.}\putmarginpar{D} }}
+% \newcommand\rubricSD{{\color{red}\textbf{\therubrics.}\putmarginpar{SD} }}
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  USE FANCY CHARACTERS, SUCH AS \RBAR FROM GREGORIO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RequirePackage{gregoriosyms}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  FORMAT HEADINGS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% TODO: we might want to improve the chapter heads. Get rid 
+% of the name "chapter" at the beginning of each.
+% \RequirePackage[Rejne]{fncychap}
+\RequirePackage[Conny]{fncychap}
+
+\RequirePackage{titlesec}
+
+\titleformat{\section}{
+    \color{red}\normalfont\normalsize\scshape\centering
+}{}{1em}{}
+
+\titleformat{\subsection}[runin]{
+    \color{red}\bfseries
+}{\arubric.}{0em}{}
+
+\newcommand{\rubric}{\subsection{}}
+
+\renewcommand\ref[1]{\arabic{\color{red}\bfseries#1}}
+
+% \titleformat{\subsection}[runin]{
+%     % \color{red}\normalfont\normalsize\bfseries
+% }{\formattedrubric}{1em}{}
+
+% \newcommand\rubric{%
+%     % \subsection{}%
+%     \thesubsection%
+% }
+
+
+
+
+
 
 \newcommand{\preface}[2]{
   \chapter*{Preface}
@@ -104,8 +152,10 @@
 }
 
 % maybe use a \renewcommand here
+% NOTE: I don't really like the way the chapter numbering was working,
+%       so this is getting rid fo them altogether.
 \newcommand{\chap}[2]{
-  \chapter{#1}
+  \chapter*{#1}
   \begin{multicols}{2}
     #2 
   \end{multicols}
