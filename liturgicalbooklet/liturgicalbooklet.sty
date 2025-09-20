@@ -1,53 +1,45 @@
 \ProvidesPackage{liturgicalbooklet}
 
+%\semiisopage[8]
+%\checkandfixthelayout
+
 \settypeblocksize{7in}{3.8in}{*}
 \setlrmargins{.6in}{*}{*}
 \setulmargins{.6in}{*}{*}
 \checkandfixthelayout
 
-\RequirePackage{graphicx}
-\graphicspath{ {./images/} }
-
-\newcommand{\mytitle}[2]{
-	\pretitle{
-		\begin{center}
-		% leftover from the Tenebrae booklets:
-		% \scshape The Office of Tenebr\ae\ of\linebreak\vspace{.125in}
-		\normalfont\Huge
-	}
-	\title{#1}
-	    % the title is defined in each main file
-	\posttitle{
-	    \end{center}
-	    \begin{figure}[h]
-		    \noindent\includegraphics[width=\textwidth]{#2}
-	    \end{figure}
-	    \vfill
-	    }
-	\preauthor{
-	    \vfill
-	    \begin{center}\small
-	    \textit{Property of}\\
-	    % TODO: I want this to be swashed eventually
-	}
-	    \author{Queen of All Saints Chapel}
-	\postauthor{
-	    \end{center}
-	    \pagebreak
-	}
-	\date{} % the date is no use in this context
+%\title{Maundy Thursday}
+%\author{Rev. Gregory R. Barnes}
+% TODO: make this a function for a generic title
+\pretitle{
+    \begin{center}
+	\scshape The Office of Tenebr\ae\ of\linebreak\vspace{.125in}
+	\normalfont\Huge
+    }
+    % the title is defined in each main file
+\posttitle{\end{center}}
+\preauthor{
+    \vfill
+    \begin{center}\small
+    \textit{Property of}\\
+    % TODO: I want this to be swashed eventually
 }
+    \author{Queen of All Saints Chapel}
+\postauthor{
+    \end{center}
+}
+\date{} % the date is no use in this context
 
 %\RequirePackage{showframe}
 
 %%% GREGORIOTEX %%%
-\RequirePackage[autocompile]{gregoriotex} % make this an option
+\RequirePackage[autocompile]{gregoriotex}
 \gresetlinecolor{gregoriocolor}
 \gresetinitiallines{1}
 \gresetannotationvalign{bottom}
 \grechangestyle{modeline}{\small} \grechangestyle{annotation}{\small}
-% \gresetgregpath{{./antiphons/}}
-% \gresetgregpath{{./responsories/}}
+\gresetgregpath{{./antiphons/}}
+\gresetgregpath{{./responsories/}}
 
 \RequirePackage{psalms} % Custom... nice
 
@@ -55,85 +47,165 @@
 \RequirePackage[super]{nth}
 \RequirePackage[latin]{babel}
 \RequirePackage{fontspec}
-\RequirePackage[T1]{fontenc}
-\defaultfontfeatures{Ligatures=TeX}
-\setmainfont{Minion3}
-\RequirePackage{lettrine}
-\renewcommand{\LettrineFontHook}{\fontfamily{lmr}\color{gregoriocolor}}
-\RequirePackage{titlesec}
-\RequirePackage{import}
-\RequirePackage{verse}
+% \RequirePackage[T1]{fontenc}
+\defaultfontfeatures{Ligatures=TeX,RawFeature={+onum}}
+\setmainfont{Minion 3}[
+  SizeFeatures = {
+    {Size={-9.2},  OpticalSize=Caption},   % small, sturdy
+    {Size={9.2-12}, OpticalSize=Regular},
+    {Size={12-17},  OpticalSize=Subhead},
+    {Size={17-},    OpticalSize=Display}
+  },
+  Numbers = {OldStyle,Proportional},
+  StylisticSet = {1},
+]
 
 % must be after gregoriotex -- for the final run
-\RequirePackage{microtype}
+\RequirePackage[protrusion=true,expansion=true,tracking=true]{microtype}
+\microtypecontext{spacing=nonfrench} % liturgical punctuation benefits
+% Slight letterspacing for small caps and rubrics:
+\SetTracking{encoding=*, shape=sc}{40} % 40 = ~0.04em, tasteful
+\SetProtrusion
+  [ name=minion3,
+    load = default ]
+  { encoding = *, family = * }
+  {
+    % gentle opening quotes / punctuation hang; improves verticals
+    \textquotedblleft = {100, 100},
+    \textquoteleft    = {100,  60},
+    \textemdash       = { 50,  50},
+    \textendash       = { 50,  50},
+    .                 = { 40,  60},
+    ,                 = { 50,  50},
+    ;                 = { 30,  40},
+    :                 = { 30,  40}
+  }
+% \UseMicrotypeSet[minion3]{protrusion}
 
-\chapterstyle{southall} % TODO: still working on a custom style.
+% page numbering
+\newcommand{\pagenumstyle}{\addfontfeatures{Numbers={Lining,Monospaced}}}
+\makeevenfoot{plain}{}{\pagenumstyle\thepage}{}
+\makeoddfoot {plain}{}{\pagenumstyle\thepage}{}
+% tighten lines before a page break
+\looseness=-1 % judiciously on paragraphs before bad breaks
 
-\titleformat{\subsection} % yeah, this does not work
-% NOTE: I think I did something like this for the rubrics package...
-{\centering\small\color{gregoriocolor}}{\thesection}{0.5em}{}
+% paragraph economy
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
 
-% todo: why is this not working?
-%\titlespacing*{\subsection}
-%{0pt}{1\smallskip}{1\smallskip}
 
-%------------------------------------------------------------------------%
-% most basic formatting helpers
-%------------------------------------------------------------------------%
+\RequirePackage{lettrine}
 
-\newcommand{\red}[1]{
-	{\color{gregoriocolor}#1}
-}
+\RequirePackage{titlesec}
 
-\newcommand{\black}[1]{
-	{\color{black}#1}
-}
+\RequirePackage{import}
 
-\newcommand{\vbar}[0]{
-	{\color{gregoriocolor}\Vbar.}
-}
+% TODO: make this our own custom heading
+\chapterstyle{southall}
 
-\newcommand{\rbar}[0]{
-	{\color{gregoriocolor}\Rbar.}
-}
+\titleformat{\subsection}
+{\centering\small\color{red}}{\thesection}{0.5em}{}
+
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\black}[1]{\textcolor{black}{#1}}
 
 \newcommand{\redtitle}[1]{
-	\subsection*{#1}
-}
+    \subsection*{#1}
+	%\begin{center}
+		%{\small\color{red}#1}
+	%\end{center}
+	}
 
-\newcommand{\versicle}[2]{
-	\gresetinitiallines{0}
-	\gabcsnippet{(c4) <c><sp>V/</sp>.</c> #1 (::)}
-	\gabcsnippet{(c4) <c><sp>R/</sp>.</c> #2 (::)}
-	\gresetinitiallines{1}
-}
-
-\newcommand{\vr}[2]{
-	\vbar #1\\
-	\rbar #2%
-}
-
-\newcommand{\vri}[2]{ % inline versicle and response
-	\vbar #1%
-	\rbar #2%
-}
-
-% FIX: the line spacing has to be tightened up a bit.
 \newcommand{\rubric}[1]{
-	\begin{raggedright}
-		\smallskip
-		{\color{gregoriocolor}\footnotesize #1}
-		\smallskip
-	\end{raggedright}
+	% \begin{raggedright}
+		%\vspace{1em}
+    \smallskip
+    {\color{red}\footnotesize #1}
+    \smallskip
+	% \end{raggedright}
 }
 
-\newcommand{\inlinerubric}[1]{
-	{\color{gregoriocolor}\footnotesize #1}
+%-------------------------------------------------------------------%
+% variable doxologies {this is very much a work in progress!!}
+%-------------------------------------------------------------------%
+
+% --- THIS IS THE FIRST ATTEMPT AND IT SEEMS TO WORK WELL
+\makeatletter
+% \AdaptiveFill{<short>}{<medium>}{<long>}
+\newcommand{\AdaptiveFill}[3]{%
+  % End the current paragraph so we’re in vertical mode and the page builder is active:
+  \par
+  \begingroup
+  % Remaining vertical space on the current page/column:
+  \dimen@=\dimexpr\pagegoal-\pagetotal\relax
+  % If we're not on a normal page (e.g., inside a minipage/box), \pagegoal is \maxdimen.
+  \ifdim\pagegoal=\maxdimen
+    \noindent #3\par % default to the long version in boxes
+  \else
+    % Try LONG
+    \setbox0=\vbox{\hsize=\linewidth \noindent #3\par}%
+    \ifdim\ht0>\dimen@
+      % Try MEDIUM
+      \setbox0=\vbox{\hsize=\linewidth \noindent #2\par}%
+      \ifdim\ht0>\dimen@
+        % Fall back to SHORT
+        \noindent #1\par
+      \else
+        \noindent #2\par
+      \fi
+    \else
+      \noindent #3\par
+    \fi
+  \fi
+  \endgroup
+}
+\makeatother
+
+\newcommand{\doxShort}{Qui tecum vivit et regnat.}
+\newcommand{\doxMed}{Qui tecum vivit et regnat in unitáte Spíritus Sancti.}
+\newcommand{\doxLong}{Qui tecum vivit et regnat in unitáte Spíritus Sancti, Deus, per ómnia sǽcula sæculórum.}
+
+%-------------------------------------------------------------------%
+% Common commands
+%-------------------------------------------------------------------%
+% Applies lettrine to the first letter, rest printed inline.
+\newcommand{\dropcap}[1]{%
+  \lettrine[lines=2]{\MakeUppercase{#1}}{}%
 }
 
-%------------------------------------------------------------------------%
-% antiphon, psalm, lesson and responsory counters
-%------------------------------------------------------------------------%
+% Variant that takes a full sentence/paragraph
+\newcommand\orationsimple[1]{%
+  \let\firstchar\relax
+  \def\firstchar##1##2\relax{%
+      \lettrine[lines=2]{\MakeUppercase{\color{red}##1}}{##2}%
+  }%
+  \firstchar#1\relax
+}
+
+
+\makeatletter
+\newcommand{\oration}[1]{%
+    \redtitle{Oratio.}
+  % Split into first word (#1) and rest (#2)
+  \def\split@first##1 ##2\@nil{%
+    % Extract first token and the rest of that first word
+    \edef\first@letter{\expandafter\@car##1\@nil}%
+    \edef\rest@letters{\expandafter\@cdr##1\@nil}%
+    % Drop cap: first letter uppercased, rest of word uppercased by LettrineTextFont
+    \renewcommand{\LettrineTextFont}{\MakeUppercase}%
+    \lettrine[lines=2]{\color{gregoriocolor}\MakeUppercase{\first@letter}}{\rest@letters}%
+    % If there’s more text after the first word, typeset it
+    \if\relax\detokenize{##2}\relax\else\ ##2\fi
+  }%
+  % Call the splitter; the added space ensures it always works
+  \expandafter\split@first#1 \@nil
+}
+\makeatother
+
+
+
+
 
 \newcounter{antiphon}\setcounter{antiphon}{1}
 \newcounter{allantiphon}\setcounter{allantiphon}{1}
@@ -155,8 +227,6 @@
 	\stepcounter{allantiphon}
 	\gresetinitiallines{1}
 	}
-
-% NOTE: a few of the following are specific to tenebrae. The can be simplified for a broader use.
 
 \newcommand{\buildcanticlem}[1]{
 	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
@@ -244,8 +314,6 @@
     \gregorioscore{#1}
     }
 
-% NOTE: Specific to tenebrae
-
 \newcommand\christus[1]{
 
     \rubric{The cantors intone the \black{Christus.}}
@@ -258,6 +326,12 @@
     \rubric{\black{Pater noster} in silence.}
     }
 
+\newcommand{\versicle}[2]{
+	\gresetinitiallines{0}
+	\gabcsnippet{(c4) <c><sp>V/</sp>.</c> #1 (::)}
+	\gabcsnippet{(c4) <c><sp>R/</sp>.</c> #2 (::)}
+	\gresetinitiallines{1}
+}
 
 \setlength{\parindent}{0pt}
 \gresetbracerendering{font}
@@ -275,70 +349,5 @@
     torm\'entum. \red{\small silently} Qui tecum vivit et regnat in unitáte
     Spíritus Sancti, Deus, per ómnia s\'\ae cula s\ae culórum. Amen.
 
-    \rubric{At the end of this prayer, a noise is made by knocking the stalls
-    of the choir until the lighted candle re-appears from behind the altar and
-    is placed on the hearse. All then rise and retire in silence.}
-    }
-
-
-%------------------------------------------------------------------------%
-% orations
-%------------------------------------------------------------------------%
-
-	% TODO: make the conclusions
-
-\newcommand\oration[1]{
-	\subsection{Oratio} % TODO: this may have to be adjusted because the space is rather big...
-	\nopagebreak[2]      % NOTE: this might not work as expected...
-	#1
+    \rubric{At the end of this prayer, a noise is made by knocking the stalls of the choir until the lighted candle re-appears from behind the altar and is placed on the hearse. All then rise and retire in silence.}
 }
-
-%------------------------------------------------------------------------%
-% capitulums, antiphons for magnificat and benedictus
-%------------------------------------------------------------------------%
-
-\newcommand\capitulum[1]{
-	\red{Cap.} #1
-}
-
-\newcommand\antmag[1]{
-	\red{Ad Magnif. Ant.} #1
-}
-
-\newcommand\antben[1]{
-	\red{Ad Bened. Ant.} #1
-}
-
-%------------------------------------------------------------------------%
-% hymn
-%------------------------------------------------------------------------%
-
-
-%------------------------------------------------------------------------%
-% double column
-%------------------------------------------------------------------------%
-
-\RequirePackage{multicol}
-\setlength{\columnsep}{20pt}      % space between columns
-\setlength{\columnseprule}{0.4pt} % thickness of the rule
-\renewcommand{\columnseprulecolor}{\color{gregoriocolor}}
-
-\newcommand\twocol[1]{
-	\begin{multicols}{2}%
-		#1
-	\end{multicols}%
-}
-
-%------------------------------------------------------------------------%
-% often repeated parts
-%------------------------------------------------------------------------%
-
-\newcommand\dv[0]{
-	\vr{D\'ominus vob\'iscum.}{Et cum sp\'iritu tuo.}
-}
-
-
-%------------------------------------------------------------------------%
-%
-%------------------------------------------------------------------------%
-
