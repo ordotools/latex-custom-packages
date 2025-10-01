@@ -1,0 +1,532 @@
+% \NeedsTeXFormat{LaTeX2e}[2021-06-01]
+\ProvidesPackage{liturgy}
+
+%\semiisopage[8]
+%\checkandfixthelayout
+
+\settypeblocksize{7in}{3.8in}{*}
+\setlrmargins{.6in}{*}{*}
+\setulmargins{.6in}{*}{*}
+\checkandfixthelayout
+
+%\title{Maundy Thursday}
+%\author{Rev. Gregory R. Barnes}
+% TODO: make this a function for a generic title
+\pretitle{
+    \begin{center}
+	\scshape The Office of Tenebr\ae\ of\linebreak\vspace{.125in}
+	\normalfont\Huge
+    }
+    % the title is defined in each main file
+\posttitle{\end{center}}
+\preauthor{
+    \vfill
+    \begin{center}\small
+    \textit{Property of}\\
+    % TODO: I want this to be swashed eventually
+}
+    \author{Queen of All Saints Chapel}
+\postauthor{
+    \end{center}
+}
+\date{} % the date is no use in this context
+
+%\RequirePackage{showframe}
+
+%%% GREGORIOTEX %%%
+\RequirePackage[autocompile]{gregoriotex}
+\gresetlinecolor{gregoriocolor}
+\gresetinitiallines{1}
+\gresetannotationvalign{bottom}
+\grechangestyle{modeline}{\small} \grechangestyle{annotation}{\small}
+\gresetgregpath{{./antiphons/}}
+\gresetgregpath{{./responsories/}}
+
+\RequirePackage{psalms} % Custom... nice
+
+\RequirePackage{ifthen}
+\RequirePackage[super]{nth}
+\RequirePackage[latin]{babel}
+\RequirePackage{fontspec}
+% \RequirePackage[T1]{fontenc}
+\defaultfontfeatures{Ligatures=TeX,RawFeature={+onum}}
+\setmainfont{Minion 3}[
+  SizeFeatures = {
+    {Size={-9.2},  OpticalSize=Caption},   % small, sturdy
+    {Size={9.2-12}, OpticalSize=Regular},
+    {Size={12-17},  OpticalSize=Subhead},
+    {Size={17-},    OpticalSize=Display}
+  },
+  Numbers = {OldStyle,Proportional},
+  StylisticSet = {1},
+]
+
+% must be after gregoriotex -- for the final run
+\RequirePackage[protrusion=true,expansion=true,tracking=true]{microtype}
+\microtypecontext{spacing=nonfrench} % liturgical punctuation benefits
+% Slight letterspacing for small caps and rubrics:
+\SetTracking{encoding=*, shape=sc}{40} % 40 = ~0.04em, tasteful
+\SetProtrusion
+  [ name=minion3,
+    load = default ]
+  { encoding = *, family = * }
+  {
+    % gentle opening quotes / punctuation hang; improves verticals
+    \textquotedblleft = {100, 100},
+    \textquoteleft    = {100,  60},
+    \textemdash       = { 50,  50},
+    \textendash       = { 50,  50},
+    .                 = { 40,  60},
+    ,                 = { 50,  50},
+    ;                 = { 30,  40},
+    :                 = { 30,  40}
+  }
+% \UseMicrotypeSet[minion3]{protrusion}
+
+% page numbering
+\newcommand{\pagenumstyle}{\addfontfeatures{Numbers={Lining,Monospaced}}}
+\makeevenfoot{plain}{}{\pagenumstyle\thepage}{}
+\makeoddfoot {plain}{}{\pagenumstyle\thepage}{}
+% tighten lines before a page break
+\looseness=-1 % judiciously on paragraphs before bad breaks
+
+% paragraph economy
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+
+\RequirePackage{lettrine}
+
+\RequirePackage{import}
+
+
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\black}[1]{\textcolor{black}{#1}}
+
+\newcommand{\redtitle}[1]{
+    \subsection*{#1}
+	%\begin{center}
+		%{\small\color{red}#1}
+	%\end{center}
+	}
+
+\newcommand{\rubric}[1]{
+	% \begin{raggedright}
+		%\vspace{1em}
+    \smallskip
+    {\color{red}\footnotesize #1}
+    \smallskip
+	% \end{raggedright}
+}
+
+\newcommand\inlinerubric[1]{{\color{red}\footnotesize #1}}
+
+
+%-------------------------------------------------------------------%
+% variable doxologies {this is very much a work in progress!!}
+%-------------------------------------------------------------------%
+
+\RequirePackage{etoolbox}
+\RequirePackage{xparse}
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=mysec,prefix=mysec@}
+\DeclareBoolOption[true]{numbered}
+\DeclareStringOption[auto]{backend} % auto|titlesec|memoir|kernel
+\ProcessKeyvalOptions*
+
+% there are 7 titles, from least to greatest:
+% CALENDAR
+% 1. hour  -- subsubsection
+% 2. feast -- subsection
+% 3. date  -- section
+% 4. cycle -- chapter
+% ORDINARIUM
+% 0. noctourne (in matins only)       -- subsubsubsection
+% 1. hour                             -- subsubsection
+% 2. day (analagous to "feast" above) -- subsection
+
+
+% --- helpers
+\makeatletter
+\newcommand\mysec@setdepth{%
+  \ifmysec@numbered\setcounter{secnumdepth}{4}\else\setcounter{secnumdepth}{-1}\fi
+  \setcounter{tocdepth}{4}%
+}
+\newcommand\mysec@backendimpl{} % set later
+\newcommand\mysec@init{\mysec@setdepth\mysec@backendimpl}
+
+% --- backend selection
+% \newif\ifmysec@use@memoir
+% \newif\ifmysec@use@titlesec
+% \newif\ifmysec@use@kernel
+%
+% \@ifclassloaded{memoir}{\mysec@use@memoirtrue}{}
+% \ifx\mysec@backend\@empty\def\mysec@backend{auto}\fi
+%
+% \csdef{mysec@select@auto}{%
+%   \ifmysec@use@memoir \let\mysec@backendimpl\mysec@impl@memoir
+%   \else
+%     \IfFileExists{titlesec.sty}{\let\mysec@backendimpl\mysec@impl@titlesec}{\let\mysec@backendimpl\mysec@impl@kernel}%
+%   \fi
+% }
+% \csdef{mysec@select@titlesec}{\let\mysec@backendimpl\mysec@impl@titlesec}
+% \csdef{mysec@select@memoir}{\let\mysec@backendimpl\mysec@impl@memoir}
+% \csdef{mysec@select@kernel}{\let\mysec@backendimpl\mysec@impl@kernel}
+%
+% \@nameuse{mysec@select@\mysec@backend}
+\newif\ifmysec@use@memoir
+\newif\ifmysec@use@titlesec
+\newif\ifmysec@use@kernel
+
+\@ifclassloaded{memoir}{\mysec@use@memoirtrue}{}
+
+% selectors: define as wrappers (not \let)
+\csdef{mysec@select@auto}{%
+  \ifmysec@use@memoir
+    \def\mysec@backendimpl{\mysec@impl@memoir}%
+  \else
+    \IfFileExists{titlesec.sty}
+      {\def\mysec@backendimpl{\mysec@impl@titlesec}}%
+      {\def\mysec@backendimpl{\mysec@impl@kernel}}%
+  \fi
+}
+\csdef{mysec@select@titlesec}{\def\mysec@backendimpl{\mysec@impl@titlesec}}
+\csdef{mysec@select@memoir}{\def\mysec@backendimpl{\mysec@impl@memoir}}
+\csdef{mysec@select@kernel}{\def\mysec@backendimpl{\mysec@impl@kernel}}
+
+% kvoptions already sets \mysec@backend (default 'auto')
+\@nameuse{mysec@select@\mysec@backend}
+
+% --- IMPLEMENTATIONS -------------------------------------------------
+
+% (A) memoir
+\newcommand\mysec@impl@memoir{%
+
+	% NOTE: that we can also use the \part{} section...
+
+	\setsecnumformat{}
+
+	% 4. cycle -- chapter
+	% TODO: we can define what this will be later
+
+
+	% 3. date  -- section
+	\setsecheadstyle{\centering}
+	\setbeforesecskip{-3.25ex plus -1ex minus -.2ex}
+	\setaftersecskip{2.3ex plus .2ex}
+
+	% 2. feast -- subsection
+	\setsubsecheadstyle{\large\bfseries\centering}
+
+	% 1. hour  -- subsubsection
+	\setsubsubsecheadstyle{\large\bfseries\centering\scshape}
+
+
+	% 0. noctourne (in matins only)       -- subsubsubsection
+	% NOTE: this is defined outside of the context of sectioning
+	% \setsubsubsubsecheadstyle{\normalsize\bfseries\color{red}}%
+	% \setbeforesubsubsubsecskip{-2.5ex plus -1ex minus -.2ex}%
+	% \setaftersubsubsubsecskip{1.2ex plus .2ex}%
+
+	% spacing
+}
+
+% (B) titlesec
+\newcommand\mysec@impl@titlesec{%
+  \RequirePackage{titlesec}
+
+
+  % 3. date  -- section
+  \titleformat{\section}[block]{\centering\small}{\thesection}{0.5em}{}
+
+  \titleformat{\section}[block]{\Large\bfseries}{\thesection}{1em}{}
+  \titlespacing*{\section}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+  \titleformat{\subsection}[block]{\large\bfseries}{\thesubsection}{1em}{}
+  \titleformat{\subsubsection}[block]{\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+  % define \subsubsubsection
+  \titleclass{\subsubsubsection}{straight}[\subsubsection]
+  \newcounter{subsubsubsection}[subsubsection]
+
+  \renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
+  \titleformat{\subsubsubsection}[block]{\normalsize\bfseries}{\thesubsubsubsection}{1em}{}
+  \titlespacing*{\subsubsubsection}{0pt}{2.5ex plus 1ex minus .2ex}{1.0ex plus .2ex}
+}
+
+% (C) pure kernel fallback
+\newcommand\mysec@impl@kernel{%
+  \makeatletter
+  \newcounter{subsubsubsection}[subsubsection]
+  \renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
+  \newcommand\subsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
+    {-2.5ex plus -1ex minus -.2ex}{1.0ex plus .2ex}{\normalfont\normalsize\bfseries}}
+  \makeatother
+}
+
+\AtBeginDocument{\mysec@init}%
+
+\makeatother
+
+
+%-------------------------------------------------------------------%
+% easier section handling
+%-------------------------------------------------------------------%
+
+\newcommand\cycle[1]{\chapter*{#1}}
+\newcommand\feastdate[1]{\section*{#1}} % FIXME: remove the numbering
+\newcommand\feast[1]{\subsection{#1}}
+\newcommand\feria[1]{\subsection{#1}}
+\newcommand\hour[1]{\subsubsection{#1}}
+
+% NOCTURNS
+\newcommand\nocturn[1]{{\small\bfseries #1.}}
+
+
+\newcommand\separator[0]{
+	\begin{center}
+		\greseparator{1}{10}
+	\end{center}
+	}
+
+%-------------------------------------------------------------------%
+% variable doxologies {this is very much a work in progress!!}
+%-------------------------------------------------------------------%
+
+
+% NOTE: there has to be a way to be able to automate a full list of
+% these doxologies. There are not that many so explicit and hard-
+% coded is possible, but I think there is something more we can do.
+
+% --- THIS IS THE FIRST ATTEMPT AND IT SEEMS TO WORK WELL
+\makeatletter
+% \AdaptiveFill{<short>}{<medium>}{<long>}
+\newcommand{\AdaptiveFill}[3]{%
+  % End the current paragraph so we’re in vertical mode and the page builder is active:
+  \par
+  \begingroup
+  % Remaining vertical space on the current page/column:
+  \dimen@=\dimexpr\pagegoal-\pagetotal\relax
+  % If we're not on a normal page (e.g., inside a minipage/box), \pagegoal is \maxdimen.
+  \ifdim\pagegoal=\maxdimen
+    \noindent #3\par % default to the long version in boxes
+  \else
+    % Try LONG
+    \setbox0=\vbox{\hsize=\linewidth \noindent #3\par}%
+    \ifdim\ht0>\dimen@
+      % Try MEDIUM
+      \setbox0=\vbox{\hsize=\linewidth \noindent #2\par}%
+      \ifdim\ht0>\dimen@
+        % Fall back to SHORT
+        \noindent #1\par
+      \else
+        \noindent #2\par
+      \fi
+    \else
+      \noindent #3\par
+    \fi
+  \fi
+  \endgroup
+}
+\makeatother
+
+\newcommand{\doxShort}{Qui tecum vivit et regnat.}
+\newcommand{\doxMed}{Qui tecum vivit et regnat in unitáte Spíritus Sancti.}
+\newcommand{\doxLong}{Qui tecum vivit et regnat in unitáte Spíritus Sancti, Deus, per ómnia sǽcula sæculórum.}
+
+
+%-------------------------------------------------------------------%
+% Common commands
+%-------------------------------------------------------------------%
+
+% Variant that takes a full sentence/paragraph
+\newcommand\dropcap[1]{%
+  \let\firstchar\relax
+  \def\firstchar##1##2\relax{%
+      \lettrine[lines=2]{\color{gregoriocolor}\MakeUppercase{##1}}{##2}%
+  }%
+  \firstchar#1\relax
+}
+
+\makeatletter
+\newcommand{\oration}[1]{%
+    \redtitle{Oratio.}
+  % Split into first word (#1) and rest (#2)
+  \def\split@first##1 ##2\@nil{%
+    % Extract first token and the rest of that first word
+    \edef\first@letter{\expandafter\@car##1\@nil}%
+    \edef\rest@letters{\expandafter\@cdr##1\@nil}%
+    % Drop cap: first letter uppercased, rest of word uppercased by LettrineTextFont
+    \renewcommand{\LettrineTextFont}{\MakeUppercase}%
+    \lettrine[lines=2]{\color{gregoriocolor}\MakeUppercase{\first@letter}}{\rest@letters}%
+    % If there’s more text after the first word, typeset it
+    \if\relax\detokenize{##2}\relax\else\ ##2\fi
+  }%
+  % Call the splitter; the added space ensures it always works
+  \expandafter\split@first#1 \@nil
+  \amen
+}
+\makeatother
+
+
+\newcommand\vbar[0]{{\color{red}V.} }
+
+\newcommand\rbar[0]{{\color{red}R.} }
+
+\newcommand{\verseResponse}[2]{
+	\indent \vbar #1\\
+	\indent \rbar #2\\
+}
+
+\newcommand\gloriapatri[0]{
+\verseResponse{Glória Patri, et Fílio, * et Spirítui Sancto.}{Sicut erat in princípio, et nunc, et semper, * et in sǽcula sæculórum. Amen. \inlinerubric{P.T.} Allelúja.}
+}
+
+\newcommand\amen[0]{
+	\rbar Amen.
+}
+
+\newcounter{antiphon}\setcounter{antiphon}{1}
+\newcounter{allantiphon}\setcounter{allantiphon}{1}
+\newcounter{responsory}\setcounter{responsory}{1}
+\newcounter{lesson}\setcounter{lesson}{1}
+
+
+\newcommand{\buildpsalm}[3]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\gresetannotationvalign{bottom}
+	\greannotation{Ant. \theantiphon}
+	\gresetgregpath{{./antiphons/}}
+	\greannotation{#3}
+	\gregorioscore{#1}
+	\subsection{Psalm #2.}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\psalm[ng]{#2}{#3} % --> "ng" sets the psalm to have no gloria
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand{\buildcanticlem}[1]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\greannotation{Ant. \theantiphon}
+	\gresetgregpath{{./antiphons/}}
+	\gresetannotationvalign{bottom}
+	\gregorioscore{#1}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\subsection{Canticle of Moses.}
+	\gresetgregpath{{./canticles/}}
+	\gregorioscore{canticle-moses}
+	\import{./canticles/}{Canticum Moysis (Exod)-4A.tex}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand{\buildcanticleh}[1]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\greannotation{Ant. \theantiphon}
+	\greannotation{1 f.}
+	\gresetgregpath{{./antiphons/}}
+	\gresetannotationvalign{bottom}
+	\gregorioscore{#1}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\subsection{Canticle of Habacuc.}
+	\gresetgregpath{{./canticles/}}
+	\gregorioscore{canticle-habacuc}
+	\import{./canticles/}{habacuc.tex}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand{\buildcanticlee}[1]{
+	\ifnum \value{allantiphon}=10 {\setcounter{antiphon}{1}} \fi
+	\greannotation{Ant. \theantiphon}
+	\greannotation{2 D.}
+	\gresetgregpath{{./antiphons/}}
+	\gresetannotationvalign{bottom}
+	\gregorioscore{#1}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\subsection{Canticle of Ezechias.}
+	\gresetgregpath{{./canticles/}}
+	\gregorioscore{ez}
+	\import{./canticles/}{ez.tex}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand{\buildcanticlez}[1]{
+
+    \rubric{During the singing of the \black{Benedictus,} the lights of the
+    church are put out and the six candles on the altar are extinguished, one
+    every second verse. During the repetition of the antiphon \black{Traditur,}
+    the last candle is taken from the hearse and placed behind the altar at the
+    Epistle side.}
+
+	\gresetannotationvalign{bottom}
+	\greannotation{At Bened.}
+	\greannotation{Ant. 1.g}
+	\gresetgregpath{{./antiphons/}}
+	\gregorioscore{#1}
+	\gresetinitiallines{0} % only the first antiphon has a dropcap
+	\subsection{Canticle of Zachary.}
+	\gresetgregpath{{./canticles/}}
+	\gregorioscore{Benedictus-solemn1g}
+	\import{./canticles/}{Benedictus-solemn1g.tex}
+	\stepcounter{antiphon}
+	\stepcounter{allantiphon}
+	\gresetinitiallines{1}
+	}
+
+\newcommand\lesson{
+    \subsection{Lesson \MakeUppercase{\romannumeral \thelesson.}}
+    \stepcounter{lesson}
+}
+
+\newcommand\responsory[2]{
+    \gresetgregpath{{./responsories/}}
+    \greannotation{Resp. \theresponsory}
+    \stepcounter{responsory}
+    \greannotation{#2}
+    \gregorioscore{#1}
+    }
+
+\newcommand\christus[1]{
+
+    \rubric{The cantors intone the \black{Christus.}}
+
+	\gresetinitiallines{1}
+    \gresetgregpath{{./christus/}}
+    \gregorioscore{christus-#1}
+
+
+    \rubric{\black{Pater noster} in silence.}
+    }
+
+\newcommand{\versicle}[2]{
+	\gresetinitiallines{0}
+	\gabcsnippet{(c4) <c><sp>V/</sp>.</c> #1 (::)}
+	\gabcsnippet{(c4) <c><sp>R/</sp>.</c> #2 (::)}
+	\gresetinitiallines{1}
+}
+
+\setlength{\parindent}{0pt}
+\gresetbracerendering{font}
+
+\newcommand\respice{
+
+    \subsection{Prayer}
+
+    \rubric{Chanted in a low, grave, voice, with no other inflexion than the
+    lowering of the voice a tone on the last syllable.}
+
+    \lettrine[lraise=0.1,nindent=0em,slope=-0.5em]{R}{\'espice,} qu\'\ae sumus
+    D\'omine, super hanc fam\'iliam tuam, pro qua D\'ominus noster Jesus
+    Christus non dubit\'avit m\'anibus tradi noc\'entium, et crucis sub\'ire
+    torm\'entum. \red{\small silently} Qui tecum vivit et regnat in unitáte
+    Spíritus Sancti, Deus, per ómnia s\'\ae cula s\ae culórum. Amen.
+
+    \rubric{At the end of this prayer, a noise is made by knocking the stalls of the choir until the lighted candle re-appears from behind the altar and is placed on the hearse. All then rise and retire in silence.}
+}
