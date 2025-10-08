@@ -1,0 +1,127 @@
+\documentclass{minimal}
+
+% Engine / language
+\usepackage{fontspec}
+\usepackage[latin]{babel} % or polyglossia; ensure desired patterns are loaded
+% \setlanguage{latin}
+\setmainfont{Latin Modern Roman}
+
+% Load module
+\directlua{psalmtones = require("psalmtones")}
+
+% --- requires xparse for \NewDocumentCommand
+\usepackage{xparse}
+
+% Directory & extension for your psalm text files
+\newcommand*\PsalmDir{psalms}
+\newcommand*\PsalmExt{txt}
+
+% Divider and joiner
+\newcommand*\PsalmHalfDivider{*}
+\newcommand*\PsalmJoiner{} % "-" to visualize syllables while debugging
+
+% Styles
+\newcommand*\PsalmStyleAccent{\bfseries}
+\newcommand*\PsalmStylePrep{\itshape}
+\newcommand*\PsalmStyleOther{} % normal
+
+% Accent mode control (positional | orthographic)
+\newcommand*\PsalmAccentMode{positional}
+\newcommand*\SetPsalmAccentMode[1]{\renewcommand*\PsalmAccentMode{#1}}
+
+% Process one line (kept for ad-hoc tests)
+\newcommand*\PsalmLine[1]{\directlua{psalmtones.process_line([[#1]])}}
+
+% \psalm[<preset>]{<number>}
+% Example: \psalm[8G]{118}
+\NewDocumentCommand{\psalm}{O{} m}{%
+  % capture args into expandable macros so [[...]] gets plain text
+  \edef\psalmpreset{\unexpanded{#1}}%
+  \edef\psalmnum{\unexpanded{#2}}%
+  \begingroup
+    % also capture config macros (dir/ext/accent) now, so Lua gets strings
+    \edef\psalmdir{\unexpanded{\PsalmDir}}%
+    \edef\psalmext{\unexpanded{\PsalmExt}}%
+    \edef\psalmaccent{\unexpanded{\PsalmAccentMode}}%
+    \directlua{
+      local preset = [[\psalmpreset]]
+      if preset == "" then preset = nil end
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]])
+    }%
+  \endgroup
+}
+
+% % Visible joiner for debugging (comment out in production)
+% % \newcommand*\PsalmJoiner{-}
+% \newcommand*\PsalmJoiner{}           % printed between syllables
+% \newcommand*\PsalmHalfDivider{*}     % the divider present in your psalm files
+%
+% % Styles
+% \newcommand*\PsalmStyleAccent{\bfseries}
+% \newcommand*\PsalmStylePrep{\itshape}
+% \newcommand*\PsalmStyleOther{}  % normal
+%
+% % Defaults for file lookup
+% \newcommand*\PsalmDir{psalms}   % folder containing your psalm text files
+% \newcommand*\PsalmExt{txt}      % file extension (e.g., txt or tex)
+%
+% % Global defaults (optional):
+% % \directlua{psalmtones.apply_setup([[mediant=2+1, termination=2+2, accent=positional]])}
+%
+% % Process one line (kept for ad hoc tests)
+% \newcommand*\PsalmLine[1]{\directlua{psalmtones.process_line([[#1]])}}
+%
+% % Main macro: \psalm[<preset>]{<number>}
+% % Optional accent mode override per call via a key: accent=orthographic|positional
+% % Example: \psalm[8G]{118}
+% %          \psalm[8G,accent=orthographic]{118}
+% \NewDocumentCommand{\psalm}{O{} m}{
+%   \directlua{
+%     local kv = [[#1]]
+%     local preset, accent = "", ""
+%     for k,v in string.gmatch(kv, "([%a_]+)%s*=%s*([^,;]+)") do
+%       if k == "accent" then accent = v end
+%     end
+%     -- If user passed a bare token like 8G with no key=, grab the first word
+%     if kv ~= "" and not kv:find("=") then preset = kv else
+%       -- Look for a token that looks like a preset name
+%       local bare = kv:match("^%s*([%w%u%l]+)%s*$")
+%       if bare and psalmtones and psalmtones.presets and psalmtones.presets[bare] then preset = bare end
+%       -- Otherwise, also try 'preset=...'
+%       local p = kv:match("preset%s*=%s*([%w%u%l]+)")
+%       if p then preset = p end
+%       -- Or explicit 'tone=...'
+%       local t = kv:match("tone%s*=%s*([%w%u%l]+)")
+%       if t then preset = t end
+%     end
+%     psalmtones.run_psalm([[#2]], preset, [[\PsalmDir]], [[\PsalmExt]], accent)
+%   }
+% }
+%
+% % \usepackage{fontspec}
+% % \usepackage[main=latin]{babel}  % ensure Latin is the active language
+% % \selectlanguage{latin}
+% %
+% % \setmainfont{Latin Modern Roman}
+% % \uchyph=1 \lefthyphenmin=1 \righthyphenmin=1
+% %
+% % \directlua{psalmtones = require("psalmtones")}
+% %
+% % \newcommand*\PsalmLine[1]{\directlua{psalmtones.process_line([[#1]])}}
+% % \newcommand*\PsalmHalfDivider{*}
+% % \newcommand*\PsalmJoiner{-} % show splits while testing
+% % \newcommand*\PsalmStyleAccent{\bfseries}
+% % \newcommand*\PsalmStylePrep{\itshape}
+% % \newcommand*\PsalmStyleOther{}
+
+\begin{document}
+% \directlua{psalmtones.apply_setup([[mediant=2+1, termination=2+2]])}
+
+% \PsalmLine{Beatus vir qui non abiit in consilio impiorum * et in via peccatorum non stetit.}\par
+
+\SetPsalmAccentMode{orthographic} % orthographic | positional
+% \PsalmLine{Dominum laudate omnes gentes * laudate eum omnes populi.}\par
+\psalm[8G]{118}
+
+% \PsalmLine{consideration}
+\end{document}
