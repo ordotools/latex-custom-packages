@@ -92,7 +92,7 @@ local function tokenize(line)
 	return out
 end
 
--- ===== Fallback syllabifier (Latin/English-ish) =====
+-- ===== Improved Latin Syllabifier =====
 local VCL = "[AEIOUYaeiouyÁÉÍÓÚÝáéíóúýÆŒæœ]"
 local function is_vowel(ch) return ch:match(VCL) ~= nil end
 
@@ -158,52 +158,98 @@ local function latin_like_syllables(word)
 			i = j
 		end
 	end
-	return out
+	
+	-- Validation: ensure no consonant-only syllables and fix single-letter issues
+	local valid_syllables = {}
+	for _, syl in ipairs(out) do
+		local has_vowel = false
+		for _, ch in utf.codes(syl) do
+			if is_vowel(utf.char(ch)) then
+				has_vowel = true
+				break
+			end
+		end
+		
+		if has_vowel then
+			-- Valid syllable with vowel
+			valid_syllables[#valid_syllables+1] = syl
+		else
+			-- Consonant-only syllable - attach to previous syllable
+			if #valid_syllables > 0 then
+				valid_syllables[#valid_syllables] = valid_syllables[#valid_syllables] .. syl
+			else
+				-- If this is the first syllable and it's consonant-only, keep it
+				valid_syllables[#valid_syllables+1] = syl
+			end
+		end
+	end
+	
+	-- Additional validation: merge single-letter syllables that aren't valid monosyllables
+	local final_syllables = {}
+	local valid_monosyllables = { "a", "e", "i", "o", "u", "y" }
+	
+	for i, syl in ipairs(valid_syllables) do
+		if #syl == 1 then
+			local is_valid_mono = false
+			for _, valid in ipairs(valid_monosyllables) do
+				if syl:lower() == valid then
+					is_valid_mono = true
+					break
+				end
+			end
+			
+			if is_valid_mono then
+				final_syllables[#final_syllables+1] = syl
+			else
+				-- Single letter that's not a valid monosyllable - attach to previous or next
+				if #final_syllables > 0 then
+					final_syllables[#final_syllables] = final_syllables[#final_syllables] .. syl
+				else
+					-- First syllable - attach to next syllable if possible
+					if i < #valid_syllables then
+						-- Skip this one, it will be attached to the next
+					else
+						final_syllables[#final_syllables+1] = syl
+					end
+				end
+			end
+		else
+			-- Multi-letter syllable - check if previous single letter needs to be attached
+			if #final_syllables > 0 and #final_syllables[#final_syllables] == 1 then
+				local prev_syl = final_syllables[#final_syllables]
+				local is_prev_valid = false
+				for _, valid in ipairs(valid_monosyllables) do
+					if prev_syl:lower() == valid then
+						is_prev_valid = true
+						break
+					end
+				end
+				if not is_prev_valid then
+					-- Attach previous single letter to current syllable
+					final_syllables[#final_syllables] = prev_syl .. syl
+				else
+					final_syllables[#final_syllables+1] = syl
+				end
+			else
+				final_syllables[#final_syllables+1] = syl
+			end
+		end
+	end
+	
+	return final_syllables
 end
 
--- ===== Hyphenation-based syllables (with fallback) =====
+-- ===== Primary syllabification method =====
 local function hyphen_syllables(word)
-	local syll_from_disc = {}
-	local head = string_to_glyphlist(word)
-	if head then
-		local save_uchyph, save_lmin, save_rmin =
-		tex.uchyph, tex.lefthyphenmin, tex.righthyphenmin
-		tex.uchyph, tex.lefthyphenmin, tex.righthyphenmin = 1, 1, 1
-		lang.hyphenate(head)
-		tex.uchyph, tex.lefthyphenmin, tex.righthyphenmin =
-		save_uchyph, save_lmin, save_rmin
-
-		local buf = {}
-		local function flush()
-			if #buf > 0 then
-				syll_from_disc[#syll_from_disc+1] = table.concat(buf)
-				buf = {}
-			end
-		end
-		for n in node.traverse(head) do
-			if n.id == N_GLY then
-				buf[#buf+1] = utf.char(n.char)
-			elseif n.id == N_DISC then
-				flush()
-			end
-		end
-		flush()
-	end
-
-	if #syll_from_disc <= 1 then
-		local fb = latin_like_syllables(word)
-		if psalmtones.debug then
-			texio.write_nl(("[psalmtones] word=%q fallback syll=%s")
-				:format(word, (#fb>0 and table.concat(fb,"|") or "<none>")))
-		end
-		return (#fb > 0) and fb or (syll_from_disc[1] and {syll_from_disc[1]} or {})
-	end
-
+	-- Use improved Latin syllabifier as primary method
+	local syllables = latin_like_syllables(word)
+	
 	if psalmtones.debug then
-		texio.write_nl(("[psalmtones] word=%q disc syll=%s")
-			:format(word, table.concat(syll_from_disc,"|")))
+		texio.write_nl(("[psalmtones] word=%q syll=%s")
+			:format(word, (#syllables>0 and table.concat(syllables,"|") or "<none>")))
 	end
-	return syll_from_disc
+	
+	return syllables
 end
 
 -- ===== Turn half-verse tokens into a sequence of syllables & separators =====

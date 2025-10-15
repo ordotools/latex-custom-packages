@@ -1,0 +1,39 @@
+\documentclass{article}
+
+% Load psalms package with orthographic accent mode option
+\usepackage[orthographic]{psalms}
+
+% Set the font (required for LuaLaTeX)
+\setmainfont{Latin Modern Roman}
+
+\begin{document}
+
+\section*{Psalms Package - Package Options}
+
+\textbf{This document was compiled with: \textbackslash usepackage[orthographic]\{psalms\}}
+
+\bigskip
+
+% ===== Example with orthographic mode =====
+\textbf{Psalm 117 with Tone 8G (orthographic accent mode from package option)}
+
+\psalm{117}{8G}
+
+\bigskip
+
+% ===== You can still override inline =====
+\textbf{Psalm 150 with Tone 2D (switching to positional mode inline)}
+
+\SetPsalmAccentMode{positional}
+\psalm{150}{2D}
+
+\bigskip
+
+% ===== Switch back to orthographic =====
+\textbf{Psalm 113 with Tone 3 (back to orthographic mode)}
+
+\SetPsalmAccentMode{orthographic}
+\psalm{113}{3}
+
+\end{document}
+
