@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage{psalms}
+\usepackage{fontspec}
+
+\begin{document}
+
+\section*{Test: Flex Handling}
+
+This tests that verses with † (flex) are correctly processed:
+\begin{itemize}
+\item Text before † should get flex cadence
+\item Text after † but before * continues normally
+\item Text after * should get termination cadence
+\end{itemize}
+
+\bigskip
+
+\psalm[preset=1D]{Symbolum Athanasianum}
+
+\end{document}
+

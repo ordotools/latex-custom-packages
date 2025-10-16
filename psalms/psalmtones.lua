@@ -411,30 +411,39 @@ local function apply_new_cadence(tokens, cadence_spec, cadence_type)
 			-- Rule 4: Check if we have enough post-syllables
 			local syllables_after = model.total_syls - accent_pos
 			if syllables_after >= acc_spec.post then
-				-- We have enough syllables after this accent
+				-- We have enough syllables after this accent for the required post
 				
 				-- Mark the accent itself (unless it's a flex)
 				if cadence_type ~= "flex" then
 					syl_style[accent_pos] = "accent"
 				end
 				
-				-- Mark extra syllables before accent (only if there's space)
-				for i = 1, acc_spec.extra_before do
-					local pos = accent_pos - i
-					if pos >= 1 and syl_style[pos] == "other" then
-						syl_style[pos] = "extra"
+				-- Calculate syllables before accent
+				local syllables_before = accent_pos - 1
+				
+				-- Mark extra syllables after accent (only if we have enough beyond post requirement)
+				-- Pattern: accent → extra_after → post
+				if syllables_after >= acc_spec.post + acc_spec.extra_after then
+					for i = 1, acc_spec.extra_after do
+						local pos = accent_pos + i
+						if pos <= model.total_syls and syl_style[pos] == "other" then
+							syl_style[pos] = "extra"
+						end
 					end
 				end
 				
-				-- Mark extra syllables after accent (only if there's space)
-				for i = 1, acc_spec.extra_after do
-					local pos = accent_pos + i
-					if pos <= model.total_syls and syl_style[pos] == "other" then
-						syl_style[pos] = "extra"
+				-- Mark extra syllables before accent (only if we have enough beyond prep requirement)
+				-- Pattern: prep → extra_before → accent
+				if syllables_before >= acc_spec.pre + acc_spec.extra_before then
+					for i = 1, acc_spec.extra_before do
+						local pos = accent_pos - i
+						if pos >= 1 and syl_style[pos] == "other" then
+							syl_style[pos] = "extra"
+						end
 					end
 				end
 				
-				-- Mark prep syllables (italic) before accent
+				-- Mark prep syllables (italic) before accent and extra_before
 				for i = 1, acc_spec.pre do
 					local pos = accent_pos - i - acc_spec.extra_before
 					if pos >= 1 and syl_style[pos] == "other" then
@@ -451,7 +460,7 @@ local function apply_new_cadence(tokens, cadence_spec, cadence_type)
 					end
 				end
 			end
-			-- If not enough post syllables, this accent is ignored (rule 4)
+			-- If not enough post syllables, this accent is ignored and we try the next accent
 		end
 	end
 	
@@ -803,29 +812,42 @@ function psalmtones.process_line(line)
 	local divider = texmacro("PsalmHalfDivider")
 	if divider == "" or not divider then divider = "*" end
 	
-	-- Check if this is a flex line
-	local is_flex = is_flex_line(line)
+	-- First, split at the asterisk to get left and right halves
+	local left, right = split_halves(line, divider)
 	
-	if is_flex then
-		-- Flex: no divider, just one cadence
-		-- Extract the flex marker for later output
-		local flex_marker = line:match("†") or line:match("\\dag") or "†"
-		local clean_line = line:gsub("†", ""):gsub("\\dag", "")
-		local tokens = tokenize(clean_line)
-		apply_new_cadence(tokens, current_preset.flex, "flex")
-		tex.sprint(" " .. flex_marker) -- Add flex marker at end
-	else
-		-- Normal verse with mediant and termination
-		local left, right = split_halves(line, divider)
+	-- Check if the left half contains a flex marker
+	local has_flex = left:find("†") or left:find("\\dag")
+	
+	if has_flex then
+		-- Split the left half at the flex marker
+		local flex_marker = left:match("†") and "†" or "\\dag"
+		local flex_pos = left:find(flex_marker, 1, true)
+		local before_flex = left:sub(1, flex_pos - 1)
+		local after_flex = left:sub(flex_pos + #flex_marker)
 		
+		-- Apply flex cadence to the part before the flex marker
+		local tokens_before_flex = tokenize(before_flex)
+		apply_new_cadence(tokens_before_flex, current_preset.flex, "flex")
+		
+		-- Output the flex marker
+		tex.sprint(" " .. (left:match("†") or "\\dag") .. " ")
+		
+		-- Output the part after flex (no special cadence)
+		local tokens_after_flex = tokenize(after_flex)
+		for _, t in ipairs(tokens_after_flex) do
+			tex.sprint(t.text)
+		end
+	else
+		-- Normal mediant (no flex)
 		local tokensL = tokenize(left)
 		apply_new_cadence(tokensL, current_preset.mediant, "mediant")
-		
-		if right then
-			tex.sprint(divider)
-			local tokensR = tokenize(right)
-			apply_new_cadence(tokensR, current_preset.termination, "termination")
-		end
+	end
+	
+	-- Output the divider and termination
+	if right then
+		tex.sprint(divider)
+		local tokensR = tokenize(right)
+		apply_new_cadence(tokensR, current_preset.termination, "termination")
 	end
 	
 	-- Ensure proper line ending to avoid underfull hbox warnings
@@ -906,8 +928,35 @@ function psalmtones.process_line_with_dropcap(line, dropcap_lines, dropcap_lhang
 	else
 		-- Process with new cadence system
 		if current_preset then
-			local tokensL = tokenize(left)
-			apply_new_cadence(tokensL, current_preset.mediant, "mediant")
+			-- Check if the left half contains a flex marker
+			local has_flex = left:find("†") or left:find("\\dag")
+			
+			if has_flex then
+				-- Split the left half at the flex marker
+				local flex_marker = left:match("†") and "†" or "\\dag"
+				local flex_pos = left:find(flex_marker, 1, true)
+				local before_flex = left:sub(1, flex_pos - 1)
+				local after_flex = left:sub(flex_pos + #flex_marker)
+				
+				-- Apply flex cadence to the part before the flex marker
+				local tokens_before_flex = tokenize(before_flex)
+				apply_new_cadence(tokens_before_flex, current_preset.flex, "flex")
+				
+				-- Output the flex marker
+				tex.sprint(" " .. (left:match("†") or "\\dag") .. " ")
+				
+				-- Output the part after flex (no special cadence)
+				local tokens_after_flex = tokenize(after_flex)
+				for _, t in ipairs(tokens_after_flex) do
+					tex.sprint(t.text)
+				end
+			else
+				-- Normal mediant (no flex)
+				local tokensL = tokenize(left)
+				apply_new_cadence(tokensL, current_preset.mediant, "mediant")
+			end
+			
+			-- Output the divider and termination
 			if right then
 				tex.sprint(divider)
 				local tokensR = tokenize(right)
