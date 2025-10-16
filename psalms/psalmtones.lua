@@ -429,16 +429,45 @@ function psalmtones.pop_tone()        if #stack > 1 then stack[#stack] = nil end
 psalmtones.presets = {
 	-- New-style presets using anchor logic
 	-- Defaults keep traditional behavior (accent = last, no explicit second accent)
-	["1"]  = { mediant_prep=1, termination_prep=1, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["2D"] = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["5"]  = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["6"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["7"]  = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["8G"] = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	-- Examples with explicit second anchor usage (optional variants)
-	["7-second-term"] = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="second", mediant_use_second=false, termination_use_second=true },
+	["1D"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1D2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1f"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1g"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1g2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1g3"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1a"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1a2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1a3"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+
+	["2"]    = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+
+	["3b"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3a"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3a2"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3g"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3g2"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+
+	["4g"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4E"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4c"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4A"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4A-star"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+
+	["5"]    = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+
+	["6"]    = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+
+	["7a"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["7b"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["7c"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["7c2"]  = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["7d"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+
+	["8G"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["8G-star"] = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["8c"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+
+	["peregrinus"] = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="second", mediant_use_second=false, termination_use_second=true },
 }
 
 local function push_preset(name)
@@ -555,11 +584,32 @@ function psalmtones.process_line(line)
 		local modelR = halfverse_model(tokenize(right))
 		apply_cadence_model(modelR, cfg.termination_prep, cfg.termination_anchor, cfg.termination_use_second)
 	end
+	
+	-- Ensure proper line ending to avoid underfull hbox warnings
+	tex.sprint("\\par ")
+end
+
+-- ===== Process one line without syllabification =====
+function psalmtones.process_line_no_syllabification(line)
+	local cfg = stack[#stack]
+	local divider = cfg.divider or texmacro("PsalmHalfDivider")
+	if divider == "" or not divider then divider = "*" end
+	local left, right = split_halves(line, divider)
+
+	-- Just print the text without any syllabification or styling
+	tex.sprint(left)
+	if right then
+		tex.sprint(divider)
+		tex.sprint(right)
+	end
+	
+	-- Ensure proper line ending to avoid underfull hbox warnings
+	tex.sprint("\\par ")
 end
 
 -- ===== Process an entire psalm file =====
 -- dir/num.ext is read; each text line is fed to process_line and followed by \par
-function psalmtones.run_psalm(num, preset, dir, ext, accent_opt)
+function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, gloria_patri, suppress_syllabification)
 	ext = (ext and ext ~= "") and ext or "txt"
 	dir = (dir and dir ~= "") and dir or "psalms"
 	if accent_opt and accent_opt ~= "" then psalmtones.set_accent_mode(accent_opt) end
@@ -567,25 +617,85 @@ function psalmtones.run_psalm(num, preset, dir, ext, accent_opt)
 	local pushed = false
 	if preset and preset ~= "" then pushed = push_preset(preset) end
 
-	local path = string.format("%s/%s.%s", dir, num, ext)
+	-- Use kpsewhich to find the file in the TeX distribution
+	local filename = string.format("%s/%s.%s", dir, num, ext)
+	local path = kpse.find_file(filename)
+	if not path then
+		-- Fallback to relative path for backward compatibility
+		path = filename
+	end
+	
 	local fh = io.open(path, "r")
 	if not fh then
-		tex.error(string.format("psalmtones: cannot open %q", path))
+		tex.error(string.format("psalmtones: cannot open %q (tried %s)", filename, path))
 		if pushed then psalmtones.pop_tone() end
 		return
 	end
+	
+	-- Start enumerate environment if verse numbers are requested
+	if verse_numbers == "true" then
+		tex.sprint("\\begin{psalmverses}")
+	end
+	
+	local verse_count = 0
 	for line in fh:lines() do
 		-- strip CR and trailing spaces only; keep leading/trailing punctuation and the '*' divider
 		line = line:gsub("\r", ""):gsub("%s+$","")
 		if line ~= "" then
-			psalmtones.process_line(line)
-			tex.sprint("\\par ")
+			verse_count = verse_count + 1
+			-- Add item for enumerate if verse numbers are requested
+			if verse_numbers == "true" then
+				tex.sprint("\\item ")
+			end
+			-- Process line with or without syllabification
+			if suppress_syllabification == "true" then
+				psalmtones.process_line_no_syllabification(line)
+			else
+				psalmtones.process_line(line)
+			end
 		else
-			-- blank line -> paragraph break
-			tex.sprint("\\par ")
+			-- blank line -> paragraph break (only if not in enumerate)
+			if verse_numbers ~= "true" then
+				tex.sprint("\\par ")
+			end
 		end
 	end
 	fh:close()
+	
+	-- Add Gloria Patri if requested (before ending enumerate)
+	if gloria_patri == "true" then
+		-- Add item for enumerate if verse numbers are requested
+		if verse_numbers == "true" then
+			tex.sprint("\\item ")
+		else
+			tex.sprint("\\par\\vspace{0.5em}")
+		end
+		-- Process Gloria Patri with psalm tone styling
+		if suppress_syllabification == "true" then
+			psalmtones.process_line_no_syllabification("Glória Patri, et Fílio, * et Spirítui Sancto.")
+		else
+			psalmtones.process_line("Glória Patri, et Fílio, * et Spirítui Sancto.")
+		end
+		
+		-- Add item for enumerate if verse numbers are requested
+		if verse_numbers == "true" then
+			tex.sprint("\\item ")
+		else
+			tex.sprint("\\par\\vspace{0.5em}")
+		end
+		-- Process second line of Gloria Patri with psalm tone styling
+		if suppress_syllabification == "true" then
+			psalmtones.process_line_no_syllabification("Sicut erat in princípio, et nunc, et semper, * et in sǽcula sæculórum. Amen.")
+		else
+			psalmtones.process_line("Sicut erat in princípio, et nunc, et semper, * et in sǽcula sæculórum. Amen.")
+		end
+	end
+	
+	-- End enumerate environment if verse numbers are requested
+	if verse_numbers == "true" then
+		tex.sprint("\\end{psalmverses}")
+	end
+	
 	if pushed then psalmtones.pop_tone() end
 end
 

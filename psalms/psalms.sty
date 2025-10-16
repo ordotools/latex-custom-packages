@@ -4,15 +4,20 @@
 % Package options
 \newif\ifpsalms@debug
 \newif\ifpsalms@orthographic
+\newif\ifpsalms@versenumbers
+\newif\ifpsalms@gloriapatri
 \DeclareOption{debug}{\psalms@debugtrue}
 \DeclareOption{orthographic}{\psalms@orthographictrue}
 \DeclareOption{positional}{\psalms@orthographicfalse}
+\DeclareOption{versenumbers}{\psalms@versenumberstrue}
+\DeclareOption{gloriapatri}{\psalms@gloriapatritrue}
 \ProcessOptions\relax
 
 % Engine / language requirements
 \RequirePackage{fontspec}
 \RequirePackage[latin]{babel}
 \RequirePackage{xparse}
+\RequirePackage{enumitem}
 
 % Load Lua module
 \directlua{psalmtones = require("psalmtones")}
@@ -44,6 +49,36 @@
   \SetPsalmAccentMode{orthographic}
 \fi
 
+% Global options
+\newcommand*\PsalmVerseNumbers{false}
+\newcommand*\PsalmGloriaPatri{false}
+\newcommand*\PsalmSuppressSyllabification{false}
+
+% Commands to control global options
+\newcommand*\SetPsalmVerseNumbers[1]{\renewcommand*\PsalmVerseNumbers{#1}}
+\newcommand*\SetPsalmGloriaPatri[1]{\renewcommand*\PsalmGloriaPatri{#1}}
+
+% Verse number style customization
+% Default style: compact, no left margin
+\newlist{psalmverses}{enumerate}{1}
+\setlist[psalmverses]{label=\arabic*.,leftmargin=*,nosep,itemsep=0.5ex}
+
+% Command to customize verse number style
+% Usage: \SetPsalmVerseStyle{label=\Roman*.,leftmargin=2em,...}
+\newcommand*\SetPsalmVerseStyle[1]{\setlist[psalmverses]{#1}}
+
+% Set global options based on package options
+\ifpsalms@versenumbers
+  \SetPsalmVerseNumbers{true}
+\fi
+\ifpsalms@gloriapatri
+  \SetPsalmGloriaPatri{true}
+\fi
+
+% Local command to suppress syllabification for a particular psalm
+\newcommand*\SuppressSyllabification{\renewcommand*\PsalmSuppressSyllabification{true}}
+\newcommand*\EnableSyllabification{\renewcommand*\PsalmSuppressSyllabification{false}}
+
 % Process one line (kept for ad-hoc tests)
 \newcommand*\PsalmLine[1]{\directlua{psalmtones.process_line([[#1]])}}
 
@@ -58,10 +93,13 @@
     \edef\psalmdir{\unexpanded{\PsalmDir}}%
     \edef\psalmext{\unexpanded{\PsalmExt}}%
     \edef\psalmaccent{\unexpanded{\PsalmAccentMode}}%
+    \edef\psalmversenumbers{\unexpanded{\PsalmVerseNumbers}}%
+    \edef\psalmgloriapatri{\unexpanded{\PsalmGloriaPatri}}%
+    \edef\psalmsuppresssyll{\unexpanded{\PsalmSuppressSyllabification}}%
     \directlua{
       local preset = [[\psalmpreset]]
       if preset == "" then preset = nil end
-      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]])
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]])
     }%
   \endgroup
 }
@@ -76,10 +114,13 @@
     \edef\psalmdir{\unexpanded{\PsalmDir}}%
     \edef\psalmext{\unexpanded{\PsalmExt}}%
     \edef\psalmaccent{\unexpanded{\PsalmAccentMode}}%
+    \edef\psalmversenumbers{\unexpanded{\PsalmVerseNumbers}}%
+    \edef\psalmgloriapatri{\unexpanded{\PsalmGloriaPatri}}%
+    \edef\psalmsuppresssyll{\unexpanded{\PsalmSuppressSyllabification}}%
     \directlua{
       local preset = [[\psalmpreset]]
       if preset == "" then preset = nil end
-      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]])
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]])
     }%
   \endgroup
 }
