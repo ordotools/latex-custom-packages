@@ -439,19 +439,19 @@ psalmtones.presets = {
 	["1a2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
 	["1a3"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
 
-	["2"]    = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["2"]    = { mediant_prep=0, termination_prep=1, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
 
-	["3b"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3a"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3a2"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3g"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3g2"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3b"]   = { mediant_prep=0, termination_prep=1, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3a"]   = { mediant_prep=0, termination_prep=1, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3a2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3g"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3g2"]  = { mediant_prep=0, termination_prep=3, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
 
-	["4g"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4E"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4c"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4A"]   = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4A-star"]  = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4g"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4E"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4c"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4A"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4A-star"]  = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
 
 	["5"]    = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
 
@@ -607,9 +607,78 @@ function psalmtones.process_line_no_syllabification(line)
 	tex.sprint("\\par ")
 end
 
+-- ===== Process first line with dropcap =====
+function psalmtones.process_line_with_dropcap(line, dropcap_lines, dropcap_lhang, dropcap_loversize, dropcap_lraise, suppress_syllabification)
+	-- Strip BOM if present (UTF-8 BOM is EF BB BF)
+	line = line:gsub("^\239\187\191", "")
+	
+	-- Extract first letter for dropcap
+	local first_char = line:match("^[%z\1-\127\194-\244][\128-\191]*")
+	if not first_char then
+		-- Fallback: process normally if we can't extract first character
+		if suppress_syllabification == "true" then
+			psalmtones.process_line_no_syllabification(line)
+		else
+			psalmtones.process_line(line)
+		end
+		return
+	end
+	
+	-- Rest of the line after first character
+	local rest = line:sub(#first_char + 1)
+	
+	-- Extract first word (for lettrine's second argument - needs to be plain text)
+	-- Match UTF-8 word characters (not spaces, colons, or asterisks)
+	local first_word = rest:match("^([^%s:*]+)")
+	if not first_word then first_word = "" end
+	local after_first_word = rest:sub(#first_word + 1)
+	
+	-- Debug output
+	if psalmtones.debug then
+		texio.write_nl(string.format("[dropcap] first_char=%q first_word=%q", first_char, first_word))
+	end
+	
+	-- Build lettrine command with parameters
+	local lettrine_opts = string.format("lines=%s, lhang=%s, loversize=%s, lraise=%s", 
+		dropcap_lines or "2", 
+		dropcap_lhang or "0", 
+		dropcap_loversize or "0", 
+		dropcap_lraise or "0")
+	
+	-- Output lettrine command with first word as plain text
+	tex.print(string.format("\\lettrine[%s]{%s}{%s}", lettrine_opts, first_char, first_word))
+	
+	-- Now process the rest of the line with psalm tone styling
+	local cfg = stack[#stack]
+	local divider = cfg.divider or texmacro("PsalmHalfDivider")
+	if divider == "" or not divider then divider = "*" end
+	local left, right = split_halves(after_first_word, divider)
+	
+	if suppress_syllabification == "true" then
+		-- Just print the text without syllabification
+		tex.sprint(left)
+		if right then
+			tex.sprint(divider)
+			tex.sprint(right)
+		end
+	else
+		-- Process with syllabification
+		local modelL = halfverse_model(tokenize(left))
+		apply_cadence_model(modelL, cfg.mediant_prep, cfg.mediant_anchor, cfg.mediant_use_second)
+		if right then
+			tex.sprint(divider)
+			local modelR = halfverse_model(tokenize(right))
+			apply_cadence_model(modelR, cfg.termination_prep, cfg.termination_anchor, cfg.termination_use_second)
+		end
+	end
+	
+	-- Ensure proper line ending
+	tex.sprint("\\par ")
+end
+
 -- ===== Process an entire psalm file =====
 -- dir/num.ext is read; each text line is fed to process_line and followed by \par
-function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, gloria_patri, suppress_syllabification)
+function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, gloria_patri, suppress_syllabification, dropcap, dropcap_lines, dropcap_lhang, dropcap_loversize, dropcap_lraise)
 	ext = (ext and ext ~= "") and ext or "txt"
 	dir = (dir and dir ~= "") and dir or "psalms"
 	if accent_opt and accent_opt ~= "" then psalmtones.set_accent_mode(accent_opt) end
@@ -634,24 +703,47 @@ function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, 
 	
 	-- Start enumerate environment if verse numbers are requested
 	if verse_numbers == "true" then
-		tex.sprint("\\begin{psalmverses}")
+		-- If dropcap is enabled, start numbering from 2
+		if dropcap == "true" then
+			tex.sprint("\\begin{psalmverses}\\setcounter{psalmversesi}{1}")
+		else
+			tex.sprint("\\begin{psalmverses}")
+		end
 	end
 	
 	local verse_count = 0
+	local is_first_verse = true
 	for line in fh:lines() do
 		-- strip CR and trailing spaces only; keep leading/trailing punctuation and the '*' divider
 		line = line:gsub("\r", ""):gsub("%s+$","")
 		if line ~= "" then
 			verse_count = verse_count + 1
-			-- Add item for enumerate if verse numbers are requested
-			if verse_numbers == "true" then
-				tex.sprint("\\item ")
-			end
-			-- Process line with or without syllabification
-			if suppress_syllabification == "true" then
-				psalmtones.process_line_no_syllabification(line)
+			
+			-- Handle first verse with dropcap if requested
+			if is_first_verse and dropcap == "true" then
+				is_first_verse = false
+				-- No \item for first verse when dropcap is enabled
+				if verse_numbers ~= "true" then
+					-- Process with dropcap outside of enumerate
+					psalmtones.process_line_with_dropcap(line, dropcap_lines, dropcap_lhang, dropcap_loversize, dropcap_lraise, suppress_syllabification)
+				else
+					-- Process with dropcap inside enumerate but without numbering
+					tex.sprint("\\item[] ")
+					psalmtones.process_line_with_dropcap(line, dropcap_lines, dropcap_lhang, dropcap_loversize, dropcap_lraise, suppress_syllabification)
+				end
 			else
-				psalmtones.process_line(line)
+				-- Normal verse processing
+				is_first_verse = false
+				-- Add item for enumerate if verse numbers are requested
+				if verse_numbers == "true" then
+					tex.sprint("\\item ")
+				end
+				-- Process line with or without syllabification
+				if suppress_syllabification == "true" then
+					psalmtones.process_line_no_syllabification(line)
+				else
+					psalmtones.process_line(line)
+				end
 			end
 		else
 			-- blank line -> paragraph break (only if not in enumerate)

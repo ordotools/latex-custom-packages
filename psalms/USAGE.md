@@ -53,6 +53,86 @@ The `psalms.sty` package provides automatic typesetting of Latin psalms with Gre
 
 This will output syllabification information to the log file for debugging purposes.
 
+### Verse Numbers Option
+
+```latex
+% Enable verse numbers for all psalms
+\usepackage[versenumbers]{psalms}
+```
+
+This will display verse numbers for each verse in the psalm. You can also enable/disable verse numbers inline:
+
+```latex
+\SetPsalmVerseNumbers{true}   % Enable verse numbers
+\psalm{117}{8G}
+\SetPsalmVerseNumbers{false}  % Disable verse numbers
+```
+
+You can customize the verse number style using `\SetPsalmVerseStyle`:
+
+```latex
+\SetPsalmVerseStyle{label=\Roman*.,leftmargin=2em,itemsep=1ex}
+```
+
+### Gloria Patri Option
+
+```latex
+% Enable Gloria Patri at the end of all psalms
+\usepackage[gloriapatri]{psalms}
+```
+
+This will automatically append the Gloria Patri doxology at the end of each psalm. You can also control it inline:
+
+```latex
+\SetPsalmGloriaPatri{true}   % Enable Gloria Patri
+\psalm{117}{8G}
+\SetPsalmGloriaPatri{false}  % Disable Gloria Patri
+```
+
+### Dropcap Option
+
+```latex
+% Enable dropcap (large initial letter) for the first verse
+\usepackage[dropcap]{psalms}
+```
+
+This will use the `lettrine` package to create a decorative drop capital for the first letter of the first verse. When used with verse numbers, the numbering automatically starts at 2 for the second verse.
+
+You can control dropcaps inline:
+
+```latex
+\SetPsalmDropcap{true}   % Enable dropcap
+\psalm{117}{8G}
+\SetPsalmDropcap{false}  % Disable dropcap
+```
+
+#### Customizing Dropcap Style
+
+You can customize the appearance of the dropcap by redefining the dropcap parameter commands:
+
+```latex
+% Set dropcap to span 3 lines with hanging and size adjustments
+\renewcommand*\PsalmDropcapLines{3}
+\renewcommand*\PsalmDropcapLhang{0.3}
+\renewcommand*\PsalmDropcapLoversize{0.1}
+\renewcommand*\PsalmDropcapLraise{0}
+```
+
+Available dropcap parameters:
+- `lines`: Number of lines the dropcap should span (default: 2)
+- `lhang`: Horizontal hanging of the dropcap into the margin (0-1, default: 0)
+- `loversize`: Size adjustment for the dropcap (default: 0)
+- `lraise`: Vertical adjustment for the dropcap (default: 0)
+
+#### Combined Options
+
+You can combine multiple package options:
+
+```latex
+% Enable verse numbers, Gloria Patri, and dropcap
+\usepackage[versenumbers,gloriapatri,dropcap]{psalms}
+```
+
 ## Available Tone Presets
 
 - `1` - Tone 1
@@ -119,6 +199,7 @@ See the included example files for complete demonstrations:
 - `example_usage.tex` - Basic usage examples with different tones
 - `example_options.tex` - Package options demonstration
 - `example_debug.tex` - Debug mode example
+- `example_dropcap.tex` - Dropcap feature demonstration with various styles
 
 ## Legacy Command
 

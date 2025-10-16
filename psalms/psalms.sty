@@ -6,11 +6,13 @@
 \newif\ifpsalms@orthographic
 \newif\ifpsalms@versenumbers
 \newif\ifpsalms@gloriapatri
+\newif\ifpsalms@dropcap
 \DeclareOption{debug}{\psalms@debugtrue}
 \DeclareOption{orthographic}{\psalms@orthographictrue}
 \DeclareOption{positional}{\psalms@orthographicfalse}
 \DeclareOption{versenumbers}{\psalms@versenumberstrue}
 \DeclareOption{gloriapatri}{\psalms@gloriapatritrue}
+\DeclareOption{dropcap}{\psalms@dropcaptrue}
 \ProcessOptions\relax
 
 % Engine / language requirements
@@ -18,6 +20,7 @@
 \RequirePackage[latin]{babel}
 \RequirePackage{xparse}
 \RequirePackage{enumitem}
+\RequirePackage{lettrine}
 
 % Load Lua module
 \directlua{psalmtones = require("psalmtones")}
@@ -53,10 +56,19 @@
 \newcommand*\PsalmVerseNumbers{false}
 \newcommand*\PsalmGloriaPatri{false}
 \newcommand*\PsalmSuppressSyllabification{false}
+\newcommand*\PsalmDropcap{false}
 
 % Commands to control global options
 \newcommand*\SetPsalmVerseNumbers[1]{\renewcommand*\PsalmVerseNumbers{#1}}
 \newcommand*\SetPsalmGloriaPatri[1]{\renewcommand*\PsalmGloriaPatri{#1}}
+\newcommand*\SetPsalmDropcap[1]{\renewcommand*\PsalmDropcap{#1}}
+
+% Dropcap style customization
+% Default values for lettrine
+\newcommand*\PsalmDropcapLines{2}
+\newcommand*\PsalmDropcapLhang{0}
+\newcommand*\PsalmDropcapLoversize{0}
+\newcommand*\PsalmDropcapLraise{0}
 
 % Verse number style customization
 % Default style: compact, no left margin
@@ -73,6 +85,9 @@
 \fi
 \ifpsalms@gloriapatri
   \SetPsalmGloriaPatri{true}
+\fi
+\ifpsalms@dropcap
+  \SetPsalmDropcap{true}
 \fi
 
 % Local command to suppress syllabification for a particular psalm
@@ -96,10 +111,15 @@
     \edef\psalmversenumbers{\unexpanded{\PsalmVerseNumbers}}%
     \edef\psalmgloriapatri{\unexpanded{\PsalmGloriaPatri}}%
     \edef\psalmsuppresssyll{\unexpanded{\PsalmSuppressSyllabification}}%
+    \edef\psalmdropcap{\unexpanded{\PsalmDropcap}}%
+    \edef\psalmdropcaplines{\unexpanded{\PsalmDropcapLines}}%
+    \edef\psalmdropcaplhang{\unexpanded{\PsalmDropcapLhang}}%
+    \edef\psalmdropcaploversize{\unexpanded{\PsalmDropcapLoversize}}%
+    \edef\psalmdropcaplraise{\unexpanded{\PsalmDropcapLraise}}%
     \directlua{
       local preset = [[\psalmpreset]]
       if preset == "" then preset = nil end
-      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]])
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]], [[\psalmdropcap]], [[\psalmdropcaplines]], [[\psalmdropcaplhang]], [[\psalmdropcaploversize]], [[\psalmdropcaplraise]])
     }%
   \endgroup
 }
@@ -117,10 +137,15 @@
     \edef\psalmversenumbers{\unexpanded{\PsalmVerseNumbers}}%
     \edef\psalmgloriapatri{\unexpanded{\PsalmGloriaPatri}}%
     \edef\psalmsuppresssyll{\unexpanded{\PsalmSuppressSyllabification}}%
+    \edef\psalmdropcap{\unexpanded{\PsalmDropcap}}%
+    \edef\psalmdropcaplines{\unexpanded{\PsalmDropcapLines}}%
+    \edef\psalmdropcaplhang{\unexpanded{\PsalmDropcapLhang}}%
+    \edef\psalmdropcaploversize{\unexpanded{\PsalmDropcapLoversize}}%
+    \edef\psalmdropcaplraise{\unexpanded{\PsalmDropcapLraise}}%
     \directlua{
       local preset = [[\psalmpreset]]
       if preset == "" then preset = nil end
-      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]])
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]], [[\psalmdropcap]], [[\psalmdropcaplines]], [[\psalmdropcaplhang]], [[\psalmdropcaploversize]], [[\psalmdropcaplraise]])
     }%
   \endgroup
 }
