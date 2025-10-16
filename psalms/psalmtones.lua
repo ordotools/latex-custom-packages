@@ -252,120 +252,233 @@ local function hyphen_syllables(word)
 	return syllables
 end
 
--- ===== Turn half-verse tokens into a sequence of syllables & separators =====
-local function halfverse_syllables(tokens)
-	local seq, join = {}, texmacro("PsalmJoiner")
+-- ===== NEW Cadence Application Logic =====
+
+-- Helper: is this word a monosyllable?
+local function is_monosyllable(word_syls)
+	return #word_syls == 1
+end
+
+-- Helper: get primary accent position in a word (1-indexed from start of word)
+local function word_primary_accent_pos(word_syls)
+	local n = #word_syls
+	if n == 0 then return nil end
+	
+	-- Rule 5.a: Check for orthographic accent
+	if accent_mode == ACCENT_ORTHOGRAPHIC then
+		for i = n, 1, -1 do
+			if syl_has_orthographic_accent(word_syls[i]) then
+				return i
+			end
+		end
+	end
+	
+	-- Rule 5.b: Monosyllables are accented (return position 1)
+	if n == 1 then return 1 end
+	
+	-- Rule 5.c: Two syllables -> penult (second-to-last, which is position 1)
+	if n == 2 then return 1 end
+	
+	-- Rule 5.d: Three or more -> antepenult (third-to-last)
+	return n - 2
+end
+
+-- Helper: get all accented syllable positions in a word (including secondary accents)
+-- Returns array of positions (1-indexed from start of word)
+local function word_all_accent_positions(word_syls)
+	local positions = {}
+	local primary = word_primary_accent_pos(word_syls)
+	if not primary then return positions end
+	
+	positions[#positions + 1] = primary
+	
+	-- Rule 5.e: Syllables 2 away from primary accent can also be accented
+	if primary >= 3 then
+		positions[#positions + 1] = primary - 2
+	end
+	if primary + 2 <= #word_syls then
+		positions[#positions + 1] = primary + 2
+	end
+	
+	-- Sort positions
+	table.sort(positions)
+	return positions
+end
+
+-- Build enhanced word model with accent information
+local function build_word_model(tokens)
+	local words = {}
+	local all_syls = {}
+	local syl_to_word = {} -- maps absolute syllable index to word index
+	
 	for _, t in ipairs(tokens) do
 		if t.kind == "word" then
-			local syls = hyphen_syllables(t.text)
-			for k, s in ipairs(syls) do
-				seq[#seq+1] = { kind = "syl", text = s }
-				if k < #syls and join ~= "" then
-					seq[#seq+1] = { kind = "sep", text = join }
+			local word_syls = hyphen_syllables(t.text)
+			local word_info = {
+				syls = word_syls,
+				start_syl = #all_syls + 1,
+				end_syl = #all_syls + #word_syls,
+				accent_positions = word_all_accent_positions(word_syls),
+				is_mono = is_monosyllable(word_syls)
+			}
+			words[#words + 1] = word_info
+			
+			for i = 1, #word_syls do
+				all_syls[#all_syls + 1] = word_syls[i]
+				syl_to_word[#all_syls] = #words
+			end
+		end
+	end
+	
+	return {
+		words = words,
+		all_syls = all_syls,
+		syl_to_word = syl_to_word,
+		total_syls = #all_syls
+	}
+end
+
+-- Find Nth accent from the end (position=1 means last word's accent, position=2 means second-to-last word's accent)
+-- Returns absolute syllable index, or nil
+local function find_nth_accent_from_end(model, position)
+	local word_count = 0
+	for i = #model.words, 1, -1 do
+		local w = model.words[i]
+		if #w.accent_positions > 0 then
+			word_count = word_count + 1
+			if word_count == position then
+				-- Return the primary (first) accent of this word
+				local rel_pos = w.accent_positions[1]
+				return w.start_syl + rel_pos - 1
+			end
+		end
+	end
+	return nil
+end
+
+-- ===== Styling emitters =====
+local function strip_marker(s) return (s:gsub("%'%s*$","")) end
+
+local function style_emit(kind, txt)
+	local style
+	if kind == "accent" then
+		style = texmacro("PsalmStyleAccent")
+	elseif kind == "secaccent" then
+		style = texmacro("PsalmStyleSecondAccent")
+		if style == "" then style = texmacro("PsalmStyleAccent") end
+	elseif kind == "prep" then
+		style = texmacro("PsalmStylePrep")
+	else
+		style = texmacro("PsalmStyleOther")
+	end
+	tex.sprint("{", style, strip_marker(txt), "}")
+end
+
+-- Apply a cadence spec to a half-verse
+-- cadence_spec = { accents = { {position=N, extra_before=N, extra_after=N, pre=N, post=N}, ... } }
+-- cadence_type = "flex" | "mediant" | "termination"
+local function apply_new_cadence(tokens, cadence_spec, cadence_type)
+	if not cadence_spec or not cadence_spec.accents then
+		-- No spec, just output plain text
+		for _, t in ipairs(tokens) do
+			if t.kind == "word" then
+				tex.sprint(t.text)
+			else
+				tex.sprint(t.text)
+			end
+		end
+		return
+	end
+	
+	local model = build_word_model(tokens)
+	if model.total_syls == 0 then
+		-- No syllables, just output
+		for _, t in ipairs(tokens) do tex.sprint(t.text) end
+		return
+	end
+	
+	-- Build syllable styling map
+	local syl_style = {} -- syl_style[i] = "accent" | "extra" | "prep" | "post_italic" | "other"
+	for i = 1, model.total_syls do
+		syl_style[i] = "other"
+	end
+	
+	-- Process each accent in the spec
+	for _, acc_spec in ipairs(cadence_spec.accents) do
+		local accent_pos = find_nth_accent_from_end(model, acc_spec.position)
+		
+		if accent_pos then
+			-- Rule 4: Check if we have enough post-syllables
+			local syllables_after = model.total_syls - accent_pos
+			if syllables_after >= acc_spec.post then
+				-- We have enough syllables after this accent
+				
+				-- Mark the accent itself (unless it's a flex)
+				if cadence_type ~= "flex" then
+					syl_style[accent_pos] = "accent"
+				end
+				
+				-- Mark extra syllables before accent (only if there's space)
+				for i = 1, acc_spec.extra_before do
+					local pos = accent_pos - i
+					if pos >= 1 and syl_style[pos] == "other" then
+						syl_style[pos] = "extra"
+					end
+				end
+				
+				-- Mark extra syllables after accent (only if there's space)
+				for i = 1, acc_spec.extra_after do
+					local pos = accent_pos + i
+					if pos <= model.total_syls and syl_style[pos] == "other" then
+						syl_style[pos] = "extra"
+					end
+				end
+				
+				-- Mark prep syllables (italic) before accent
+				for i = 1, acc_spec.pre do
+					local pos = accent_pos - i - acc_spec.extra_before
+					if pos >= 1 and syl_style[pos] == "other" then
+						syl_style[pos] = "prep"
+					end
+				end
+				
+				-- Rule 6: For flex, italicize everything after accent
+				if cadence_type == "flex" then
+					for i = accent_pos + 1, model.total_syls do
+						if syl_style[i] == "other" then
+							syl_style[i] = "post_italic"
+						end
+					end
+				end
+			end
+			-- If not enough post syllables, this accent is ignored (rule 4)
+		end
+	end
+	
+	-- Now output the tokens with styling
+	local syl_idx = 0
+	for _, t in ipairs(tokens) do
+		if t.kind == "word" then
+			local word_syls = hyphen_syllables(t.text)
+			local join = texmacro("PsalmJoiner")
+			for k, s in ipairs(word_syls) do
+				syl_idx = syl_idx + 1
+				local style = syl_style[syl_idx]
+				
+				if style == "accent" or style == "extra" then
+					style_emit("accent", s)
+				elseif style == "prep" or style == "post_italic" then
+					style_emit("prep", s)
+				else
+					style_emit("other", s)
+				end
+				
+				if k < #word_syls and join ~= "" then
+					tex.sprint(join)
 				end
 			end
 		else
-			seq[#seq+1] = t
-		end
-	end
-	return seq
-end
-
--- ===== Anchor & word-accent helpers =====
-local function word_accent_index(syls)
-	local n = #syls
-	if n == 0 then return nil end
-	if accent_mode == ACCENT_ORTHOGRAPHIC then
-		for i = n, 1, -1 do
-			if syl_has_orthographic_accent(syls[i]) then return i end
-		end
-	end
-	return (n >= 2) and (n - 1) or 1 -- penult fallback
-end
-
-local function halfverse_model(tokens)
-	local seq, words = {}, {}
-	local join = texmacro("PsalmJoiner")
-	local ord = 0 -- syllable ordinal within the half-verse
-	for _, t in ipairs(tokens) do
-		if t.kind == "word" then
-			local syls = hyphen_syllables(t.text)
-			local start_ord = ord + 1
-			for k, s in ipairs(syls) do
-				seq[#seq+1] = { kind = "syl", text = s }
-				ord = ord + 1
-				if k < #syls and join ~= "" then seq[#seq+1] = { kind = "sep", text = join } end
-			end
-			local nsyl = #syls
-			local acc_rel = (nsyl > 0) and word_accent_index(syls) or nil
-			local acc_abs = acc_rel and (start_ord + acc_rel - 1) or nil
-			words[#words+1] = { nsyl = nsyl, start = start_ord, ["end"] = start_ord + nsyl - 1, acc_rel = acc_rel, acc_abs = acc_abs }
-		else
-			seq[#seq+1] = t
-		end
-	end
-	return { seq = seq, words = words, syll_count = ord }
-end
-
-local function find_anchor(words, start_i)
-	local i = start_i
-	while i >= 1 and (words[i].nsyl or 0) == 0 do i = i - 1 end
-	if i < 1 then return nil end
-	local skipped_mono = false
-	if words[i].nsyl == 1 then
-		skipped_mono = true
-		i = i - 1
-		while i >= 1 and (words[i].nsyl or 0) == 0 do i = i - 1 end
-		if i < 1 then
-			-- Only a trailing monosyllable exists
-			local mono = start_i
-			return { ord = words[mono].start, word_i = mono }
-		end
-	end
-	local w = words[i]
-	local acc_rel = w.acc_rel or ((w.nsyl >= 2) and (w.nsyl - 1) or 1)
-	if skipped_mono and w.nsyl >= 3 and acc_rel == (w.nsyl - 2) then
-		acc_rel = w.nsyl -- antepenult -> ultima override
-	end
-	return { ord = w.start + acc_rel - 1, word_i = i }
-end
-
--- forward decl for emitter used below
-local style_emit
-
-local function apply_cadence_model(model, prep, anchor_sel, use_second)
-	local seq, words = model.seq, model.words
-	local idx = {}
-	for i, it in ipairs(seq) do if it.kind == "syl" then idx[#idx+1] = i end end
-	if #idx == 0 then for _, it in ipairs(seq) do tex.sprint(it.text) end; return end
-
-	local a1 = find_anchor(words, #words)
-	local a2 = a1 and find_anchor(words, a1.word_i - 1) or nil
-
-	local main_ord = (anchor_sel == "second" and a2 and a2.ord) or (a1 and a1.ord) or 1
-	if main_ord < 1 then main_ord = 1 elseif main_ord > #idx then main_ord = #idx end
-
-	local prep_set = {}
-	local ps = math.max(1, main_ord - (prep or 0))
-	for k = ps, main_ord - 1 do prep_set[k] = true end
-
-	local sec_ord = (use_second and a2 and a2.ord) or nil
-
-	local cur_ord = 0
-	for i, it in ipairs(seq) do
-		if it.kind == "syl" then
-			cur_ord = cur_ord + 1
-			if cur_ord == main_ord then
-				style_emit("accent", it.text)
-			elseif sec_ord and cur_ord == sec_ord then
-				style_emit("secaccent", it.text)
-			elseif prep_set[cur_ord] then
-				style_emit("prep", it.text)
-			else
-				style_emit("other", it.text)
-			end
-		else
-			tex.sprint(it.text)
+			tex.sprint(t.text)
 		end
 	end
 end
@@ -426,139 +539,245 @@ function psalmtones.push_tone(kv)     stack[#stack+1] = parse_keyvals(kv, stack[
 function psalmtones.pop_tone()        if #stack > 1 then stack[#stack] = nil end end
 
 -- ===== Presets =====
+-- New structure: each preset has flex, mediant, termination sub-tables
+-- Each sub-table contains:
+--   accents = array of accent specifications
+--
+-- Each accent spec has:
+--   position      = which accent from the end (1=last, 2=second-to-last, etc.)
+--   extra_before  = number of extra syllables before accent (styled bold)
+--   extra_after   = number of extra syllables after accent (styled bold)
+--   pre           = number of preparatory syllables before accent (styled italic)
+--   post          = minimum syllables required after accent (not styled, just spacing)
+--
+-- Example with all features:
+--   flex        = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} }
+--   mediant     = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} }
+--   termination = { accents = {
+--                     { position=2, extra_before=0, extra_after=0, pre=0, post=0 },  -- second accent
+--                     { position=1, extra_before=0, extra_after=2, pre=1, post=0 }   -- first accent
+--                   }}
+--
+
 psalmtones.presets = {
-	-- New-style presets using anchor logic
-	-- Defaults keep traditional behavior (accent = last, no explicit second accent)
-	["1D"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
-	["1D2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
-	["1f"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
-	["1g"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
-	["1g2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
-	["1g3"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
-	["1a"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
-	["1a2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
-	["1a3"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=true, termination_use_second=false },
+	["1D"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
+	["1D2"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
+	["1f"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
+	["1g"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
+	["1g2"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
+	["1g3"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
+	["1a"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
+	["1a2"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
+	["1a3"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {
+			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+		}
+		},
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
+	},
 
-	["2"]    = { mediant_prep=0, termination_prep=1, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["2"]    = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=1, post=0 }} }
+	},
 
-	["3b"]   = { mediant_prep=0, termination_prep=1, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3a"]   = { mediant_prep=0, termination_prep=1, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3a2"]  = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3g"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["3g2"]  = { mediant_prep=0, termination_prep=3, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["3b"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=0, post=0 }} }
+	},
+	["3a"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=0, post=0 }} }
+	},
+	["3a2"]  = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=2, pre=0, post=0 }} }
+	},
+	["3g"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=2, pre=0, post=0 }} }
+	},
+	["3g2"]  = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=3, pre=0, post=0 }} }
+	},
 
-	["4g"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4E"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4c"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4A"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["4A-star"]  = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["4g"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["4E"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=1, extra_after=0, pre=3, post=1 }} }
+	},
+	["4c"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["4A"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["4A-star"]  = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
 
-	["5"]    = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["5"]    = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
 
-	["6"]    = { mediant_prep=1, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["6"]    = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=1, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
 
-	["7a"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["7b"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["7c"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["7c2"]  = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["7d"]   = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["7a"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["7b"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["7c"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["7c2"]  = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["7d"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
 
-	["8G"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["8G-star"] = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
-	["8c"]   = { mediant_prep=0, termination_prep=2, mediant_anchor="last", termination_anchor="last", mediant_use_second=false, termination_use_second=false },
+	["8G"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["8G-star"] = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
+	["8c"]   = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }} },
+		termination = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }} }
+	},
 
-	["peregrinus"] = { mediant_prep=2, termination_prep=2, mediant_anchor="last", termination_anchor="second", mediant_use_second=false, termination_use_second=true },
+	["peregrinus"] = {
+		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
+		mediant = { accents = {{ position=1, extra_before=0, extra_after=0, pre=2, post=1 }} },
+		termination = {
+			accents = {
+				{ position=2, extra_before=0, extra_after=0, pre=0, post=0 },
+				{ position=1, extra_before=0, extra_after=0, pre=2, post=0 }
+			}
+		}
+	},
 }
+
+-- Store current preset (no longer uses push_tone - direct storage)
+local current_preset = nil
 
 local function push_preset(name)
 	local p = psalmtones.presets[name]
 	if not p then return false end
-	if p.mediant_prep then
-		local kv = string.format(
-			"mediant=%d+0, termination=%d+0, mediant_anchor=%s, termination_anchor=%s, mediant_use_second=%s, termination_use_second=%s",
-			p.mediant_prep or 0,
-			p.termination_prep or 0,
-			p.mediant_anchor or "last",
-			p.termination_anchor or "last",
-			(p.mediant_use_second and "true" or "false"),
-			(p.termination_use_second and "true" or "false")
-		)
-		psalmtones.push_tone(kv)
-		return true
-	end
-	-- Back-compat (old 4-number form)
-	local kv = string.format("mediant=%d+%d, termination=%d+%d",
-		p[1] or 1, p[2] or 1, p[3] or 1, p[4] or 0)
-	psalmtones.push_tone(kv)
+	current_preset = p
 	return true
 end
 
--- ===== Styling emitters =====
-local function strip_marker(s) return (s:gsub("%'%s*$","")) end
-
-style_emit = function(kind, txt)
-	local style
-	if kind == "accent" then
-		style = texmacro("PsalmStyleAccent")
-	elseif kind == "secaccent" then
-		style = texmacro("PsalmStyleSecondAccent")
-		if style == "" then style = texmacro("PsalmStyleAccent") end
-	elseif kind == "prep" then
-		style = texmacro("PsalmStylePrep")
-	else
-		style = texmacro("PsalmStyleOther")
-	end
-	tex.sprint("{", style, strip_marker(txt), "}")
-end
--- 	elseif kind == "prep" then
--- 		style = texmacro("PsalmStylePrep")
--- 	else
--- 		style = texmacro("PsalmStyleOther")
--- 	end
--- 	tex.sprint("{", style, strip_marker(txt), "}")
--- end
-
--- Compute accent position for a syllable-only index array
-local function compute_accent_pos(seq, idx, post)
-	if accent_mode == ACCENT_ORTHOGRAPHIC then
-		local last = nil
-		for pos, seq_i in ipairs(idx) do
-			local syl = seq[seq_i].text
-			if syl_has_orthographic_accent(syl) then last = pos end
-		end
-		if last then return last end  -- found one; use it
-	end
-	-- Positional fallback (Liber): accent is (#syl - post), clamped
-	local n = #idx
-	local pos = n - post
-	if pos < 1 then pos = 1 elseif pos > n then pos = n end
-	return pos
-end
-
--- Apply cadence to a half-verse sequence
-local function apply_cadence(seq, prep, post)
-	local idx = {}
-	for i, it in ipairs(seq) do if it.kind == "syl" then idx[#idx+1] = i end end
-	local n = #idx
-	if n == 0 then for _, it in ipairs(seq) do tex.sprint(it.text) end; return end
-
-	local accent_pos = compute_accent_pos(seq, idx, post)
-	local accent_i   = idx[accent_pos]
-
-	local prep_start = math.max(1, accent_pos - prep)
-	local prep_set = {}
-	for p = prep_start, accent_pos - 1 do prep_set[idx[p]] = true end
-
-	for i, it in ipairs(seq) do
-		if it.kind == "syl" then
-			if i == accent_i then      style_emit("accent", it.text)
-			elseif prep_set[i] then    style_emit("prep",   it.text)
-			else                       style_emit("other",  it.text)
-			end
-		else
-			tex.sprint(it.text)
-		end
-	end
+local function pop_preset()
+	current_preset = nil
 end
 
 -- ===== Split a line at the first divider =====
@@ -568,21 +787,45 @@ local function split_halves(line, divider)
 end
 
 -- ===== Public: process one logical psalm line =====
-local function to_seq(str) return halfverse_syllables(tokenize(str)) end
+-- Flex is indicated by a dagger (†) symbol
+local function is_flex_line(line)
+	return line:find("†") ~= nil or line:find("\\dag") ~= nil
+end
 
 function psalmtones.process_line(line)
-	local cfg = stack[#stack]
-	local divider = cfg.divider or texmacro("PsalmHalfDivider")
+	if not current_preset then
+		-- Fallback: no preset, just output the line as-is
+		tex.sprint(line)
+		tex.sprint("\\par ")
+		return
+	end
+	
+	local divider = texmacro("PsalmHalfDivider")
 	if divider == "" or not divider then divider = "*" end
-	local left, right = split_halves(line, divider)
-
-	local modelL = halfverse_model(tokenize(left))
-	apply_cadence_model(modelL, cfg.mediant_prep, cfg.mediant_anchor, cfg.mediant_use_second)
-
-	if right then
-		tex.sprint(divider)
-		local modelR = halfverse_model(tokenize(right))
-		apply_cadence_model(modelR, cfg.termination_prep, cfg.termination_anchor, cfg.termination_use_second)
+	
+	-- Check if this is a flex line
+	local is_flex = is_flex_line(line)
+	
+	if is_flex then
+		-- Flex: no divider, just one cadence
+		-- Extract the flex marker for later output
+		local flex_marker = line:match("†") or line:match("\\dag") or "†"
+		local clean_line = line:gsub("†", ""):gsub("\\dag", "")
+		local tokens = tokenize(clean_line)
+		apply_new_cadence(tokens, current_preset.flex, "flex")
+		tex.sprint(" " .. flex_marker) -- Add flex marker at end
+	else
+		-- Normal verse with mediant and termination
+		local left, right = split_halves(line, divider)
+		
+		local tokensL = tokenize(left)
+		apply_new_cadence(tokensL, current_preset.mediant, "mediant")
+		
+		if right then
+			tex.sprint(divider)
+			local tokensR = tokenize(right)
+			apply_new_cadence(tokensR, current_preset.termination, "termination")
+		end
 	end
 	
 	-- Ensure proper line ending to avoid underfull hbox warnings
@@ -649,8 +892,7 @@ function psalmtones.process_line_with_dropcap(line, dropcap_lines, dropcap_lhang
 	tex.print(string.format("\\lettrine[%s]{%s}{%s}", lettrine_opts, first_char, first_word))
 	
 	-- Now process the rest of the line with psalm tone styling
-	local cfg = stack[#stack]
-	local divider = cfg.divider or texmacro("PsalmHalfDivider")
+	local divider = texmacro("PsalmHalfDivider")
 	if divider == "" or not divider then divider = "*" end
 	local left, right = split_halves(after_first_word, divider)
 	
@@ -662,13 +904,22 @@ function psalmtones.process_line_with_dropcap(line, dropcap_lines, dropcap_lhang
 			tex.sprint(right)
 		end
 	else
-		-- Process with syllabification
-		local modelL = halfverse_model(tokenize(left))
-		apply_cadence_model(modelL, cfg.mediant_prep, cfg.mediant_anchor, cfg.mediant_use_second)
-		if right then
-			tex.sprint(divider)
-			local modelR = halfverse_model(tokenize(right))
-			apply_cadence_model(modelR, cfg.termination_prep, cfg.termination_anchor, cfg.termination_use_second)
+		-- Process with new cadence system
+		if current_preset then
+			local tokensL = tokenize(left)
+			apply_new_cadence(tokensL, current_preset.mediant, "mediant")
+			if right then
+				tex.sprint(divider)
+				local tokensR = tokenize(right)
+				apply_new_cadence(tokensR, current_preset.termination, "termination")
+			end
+		else
+			-- No preset, just output
+			tex.sprint(left)
+			if right then
+				tex.sprint(divider)
+				tex.sprint(right)
+			end
 		end
 	end
 	
@@ -697,7 +948,7 @@ function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, 
 	local fh = io.open(path, "r")
 	if not fh then
 		tex.error(string.format("psalmtones: cannot open %q (tried %s)", filename, path))
-		if pushed then psalmtones.pop_tone() end
+		if pushed then pop_preset() end
 		return
 	end
 	
@@ -788,7 +1039,7 @@ function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, 
 		tex.sprint("\\end{psalmverses}")
 	end
 	
-	if pushed then psalmtones.pop_tone() end
+	if pushed then pop_preset() end
 end
 
 return psalmtones
