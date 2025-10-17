@@ -832,11 +832,9 @@ function psalmtones.process_line(line)
 		-- Output the flex marker
 		tex.sprint(" " .. (left:match("†") or "\\dag") .. " ")
 		
-		-- Output the part after flex (no special cadence)
+		-- Apply mediant cadence to the part after flex
 		local tokens_after_flex = tokenize(after_flex)
-		for _, t in ipairs(tokens_after_flex) do
-			tex.sprint(t.text)
-		end
+		apply_new_cadence(tokens_after_flex, current_preset.mediant, "mediant")
 	else
 		-- Normal mediant (no flex)
 		local tokensL = tokenize(left)
@@ -945,11 +943,9 @@ function psalmtones.process_line_with_dropcap(line, dropcap_lines, dropcap_lhang
 				-- Output the flex marker
 				tex.sprint(" " .. (left:match("†") or "\\dag") .. " ")
 				
-				-- Output the part after flex (no special cadence)
+				-- Apply mediant cadence to the part after flex
 				local tokens_after_flex = tokenize(after_flex)
-				for _, t in ipairs(tokens_after_flex) do
-					tex.sprint(t.text)
-				end
+				apply_new_cadence(tokens_after_flex, current_preset.mediant, "mediant")
 			else
 				-- Normal mediant (no flex)
 				local tokensL = tokenize(left)
