@@ -101,7 +101,7 @@
 \RequirePackage{import}
 
 
-\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\red}[1]{\textcolor{gregoriocolor}{#1}}
 \newcommand{\black}[1]{\textcolor{black}{#1}}
 
 \newcommand{\redtitle}[1]{
@@ -115,12 +115,12 @@
 	% \begin{raggedright}
 		%\vspace{1em}
     \smallskip
-    {\color{red}\footnotesize #1}
+    {\color{gregoriocolor}\footnotesize #1}
     \smallskip
 	% \end{raggedright}
 }
 
-\newcommand\inlinerubric[1]{{\color{red}\footnotesize #1}}
+\newcommand\inlinerubric[1]{{\color{gregoriocolor}\footnotesize #1}}
 
 
 %-------------------------------------------------------------------%
@@ -156,25 +156,6 @@
 \newcommand\mysec@backendimpl{} % set later
 \newcommand\mysec@init{\mysec@setdepth\mysec@backendimpl}
 
-% --- backend selection
-% \newif\ifmysec@use@memoir
-% \newif\ifmysec@use@titlesec
-% \newif\ifmysec@use@kernel
-%
-% \@ifclassloaded{memoir}{\mysec@use@memoirtrue}{}
-% \ifx\mysec@backend\@empty\def\mysec@backend{auto}\fi
-%
-% \csdef{mysec@select@auto}{%
-%   \ifmysec@use@memoir \let\mysec@backendimpl\mysec@impl@memoir
-%   \else
-%     \IfFileExists{titlesec.sty}{\let\mysec@backendimpl\mysec@impl@titlesec}{\let\mysec@backendimpl\mysec@impl@kernel}%
-%   \fi
-% }
-% \csdef{mysec@select@titlesec}{\let\mysec@backendimpl\mysec@impl@titlesec}
-% \csdef{mysec@select@memoir}{\let\mysec@backendimpl\mysec@impl@memoir}
-% \csdef{mysec@select@kernel}{\let\mysec@backendimpl\mysec@impl@kernel}
-%
-% \@nameuse{mysec@select@\mysec@backend}
 \newif\ifmysec@use@memoir
 \newif\ifmysec@use@titlesec
 \newif\ifmysec@use@kernel
@@ -222,14 +203,6 @@
 	% 1. hour  -- subsubsection
 	\setsubsubsecheadstyle{\large\bfseries\centering\scshape}
 
-
-	% 0. noctourne (in matins only)       -- subsubsubsection
-	% NOTE: this is defined outside of the context of sectioning
-	% \setsubsubsubsecheadstyle{\normalsize\bfseries\color{red}}%
-	% \setbeforesubsubsubsecskip{-2.5ex plus -1ex minus -.2ex}%
-	% \setaftersubsubsubsecskip{1.2ex plus .2ex}%
-
-	% spacing
 }
 
 % (B) titlesec
@@ -279,8 +252,10 @@
 \newcommand\feria[1]{\subsection{#1}}
 \newcommand\hour[1]{\subsubsection{#1}}
 
-% NOCTURNS
 \newcommand\nocturn[1]{{\small\bfseries #1.}}
+
+% TODO: see if there is a way to split the psalm by period so that we can get the parts
+\newcommand\psalmtitle[1]{ \smallskip {\centering\small\color{gregoriocolor} Psalmus #1.\par} }
 
 
 \newcommand\separator[0]{
@@ -369,9 +344,9 @@
 \makeatother
 
 
-\newcommand\vbar[0]{{\color{red}V.} }
+\newcommand\vbar[0]{{\color{gregoriocolor}\Vbar} }
 
-\newcommand\rbar[0]{{\color{red}R.} }
+\newcommand\rbar[0]{{\color{gregoriocolor}\Rbar} }
 
 \newcommand{\verseResponse}[2]{
 	\indent \vbar #1\\

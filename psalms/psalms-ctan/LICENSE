@@ -1,0 +1,278 @@
+The LaTeX Project Public License
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+LPPL Version 1.3c  2008-05-04
+
+Copyright 1999 2002-2008
+LaTeX3 Project
+    Everyone is allowed to distribute verbatim copies of this license document, but
+    modification of it is not allowed.
+
+
+PREAMBLE
+========
+
+The LaTeX Project Public License (LPPL) is the primary license under which the
+LaTeX kernel and the base LaTeX packages are distributed.
+
+You may use this license for any work of which you hold the copyright and which
+you wish to distribute.  This license may be particularly suitable if your work
+is TeX-related (such as a LaTeX package), but it is written in such a way that
+you can use it even if your work is unrelated to TeX.
+
+The section `WHETHER AND HOW TO DISTRIBUTE WORKS UNDER THIS LICENSE', below,
+gives instructions, examples, and recommendations for authors who are
+considering distributing their works under this license.
+
+This license gives conditions under which a work may be distributed and
+modifies the normal process of modifying a work.  Instead of directly changing
+a work that you have received, you are encouraged to copy the work and make any
+changes to your copy.  You may then distribute the modified copy under the same
+license, either changing its name or maintaining the same name as the original
+work.
+
+This license also provides for what we call the \emph{maintenance} of a work,
+which is the ability for other people to take over the responsibility of
+developing the work when the original author is no longer able or willing to do
+so.  Maintenance under this license is quite different from traditional
+software maintenance, so please read the `MAINTENANCE' section carefully.
+
+The LaTeX Project Public License is copyright (C) 1999 2002-2008
+The LaTeX3 Project.  All rights reserved.
+
+
+DEFINITIONS
+===========
+
+In this license document the following terms are used:
+
+  `Work'
+    Any work being distributed under this License.  (This document is an
+    example of a Work.)
+
+  `Derived Work'
+    Any work that under any applicable law is derived from the Work.
+
+  `Modification'
+    Any procedure that produces a Derived Work under any applicable law -- for
+    example, the production of a file containing an identical copy of part of
+    the Work, or the production of a file containing a translated version of
+    part of the Work.
+
+  `Modify'
+    To apply any procedure that produces a Derived Work under any applicable
+    law.
+
+  `Distribution'
+    Making copies of the Work available from one person to another, in whole or
+    in part.  Distribution includes (but is not limited to) making any electronic
+    components of the Work accessible by file transfer protocols such as FTP or
+    HTTP or by shared file systems such as Sun's Network File System (NFS).
+
+  `Compiled Work'
+    A version of the Work that has been processed into a form where it is
+    directly usable on a computer system.  This processing may include using
+    installation facilities provided by the Work, transformations of the Work,
+    copying of components of the Work, or other activities.  Note that this
+    license places no restrictions on the format of a Compiled Work.
+
+  `Current Maintainer'
+    A person who is named as such in the Work.  If there is no Current
+    Maintainer then the Work is `unmaintained'.
+
+  `Base Interpreter'
+    A program or process that is normally needed for running or interpreting a
+    part or the whole of the Work.
+
+    A Base Interpreter may depend on external components but these do not form
+    part of the Base Interpreter as long as they are not packaged with it as a
+    single unit.
+
+    A Base Interpreter may be (but is not limited to) a `TeX engine' (such as
+    TeX itself, pdfTeX, XeTeX, LuaTeX, etc.), or a format (such as Plain TeX,
+    LaTeX, AMS-TeX, ConTeXt, etc.), or a `shell' (such as a Unix shell, a DOS
+    shell, an MSWindows shell, etc.), or a graphics interpreter (such as
+    MetaPost, MetaFont, GhostScript, etc.).
+
+
+CONDITIONS ON DISTRIBUTION AND MODIFICATION
+===========================================
+
+    1.  Activities other than distribution and/or modification of the Work are
+        not covered by this license; they are outside its scope.  In particular,
+        the act of running the Work is not restricted and no requirements are
+        made concerning any offers of support for the Work.
+
+    2.  You may distribute a complete, unmodified copy of the Work as you
+        received it.  Distribution of only part of the Work is considered
+        modification of the Work, and no right to distribute such a Derived Work
+        may be assumed under the terms of this license.
+
+    3.  You may distribute a Compiled Work that has been generated from a
+        complete, unmodified copy of the Work as distributed under Clause 2
+        above, as long as that Compiled Work is distributed in such a way that
+        the recipients may install the Compiled Work on their system exactly as
+        it would have been installed if they generated a Compiled Work directly
+        from the Work.
+
+    4.  If you are the Current Maintainer of the Work, you may, without
+        restriction, modify the Work, thus creating a Derived Work.  You may, in
+        addition, without restriction, distribute the Derived Work under the
+        terms of Clause 2 above.  Distribution of only part of the Work under
+        Clause 3 does not count as a modification and does not require this
+        clause.
+
+    5.  If you are not the Current Maintainer of the Work, you may distribute a
+        Derived Work provided the conditions in Clause 6, below, are met.
+
+    6.  You may distribute a Derived Work under the same conditions as in
+        Clause 2 above provided that
+
+        a.  Your Derived Work is distributed as a whole, meaning that all files
+            that it contains must be distributed under this license.  If you
+            want to distribute parts of your Derived Work under another license,
+            then you must ensure that your Derived Work is clearly distinguishable
+            from the Work, and that those parts of your Derived Work that you want
+            to distribute under another license do not contain any substantial
+            part of the Work.
+
+        b.  You ensure that every copy of the Derived Work you distribute
+            contains a prominent notice that the Derived Work differs from the
+            Work.  Such notices must appear in each file of the Derived Work that
+            differs from the Work.
+
+        c.  You ensure that the Derived Work is not represented as being the
+            original Work, either by explicit statement or implication.  The
+            Derived Work must be given a different name from the Work.
+
+        d.  You ensure that the Derived Work contains the location of the
+            original Work (as it was distributed by the Current Maintainer) in the
+            distribution information of the Derived Work.
+
+    7.  If the Work is unmaintained, you may become the Current Maintainer by
+        adding yourself to the list of Current Maintainers of the Work in the
+        Derived Work in accordance with Clause 6 above.
+
+        a.  If the Work is maintained, you can only become the Current
+            Maintainer if the former Current Maintainer agrees to pass
+            maintenance of the Work to you.
+
+    8.  You may distribute a Derived Work that has been otherwise modified,
+        even without respecting Clause 6 above, provided that you distribute the
+        Derived Work with a request for permission from the Current Maintainer to
+        distribute the Derived Work as part of the Work.
+
+    9.  If you become the Current Maintainer of the Work, you should change the
+        `Maintained by' field in the Work to your own name.  You should also
+        ensure that the previous Maintainer is acknowledged.
+
+    10. Whenever this license requires that a Derived Work be distributed under
+        the terms of this license, the Derived Work may include files
+        redistributable under different terms, provided that the new terms
+        acknowledge the status of the Derived Work as a Derived Work of the
+        Work.  That is, the new terms must acknowledge the source and must allow
+        modification and redistribution of the Derived Work under the same terms
+        as this license.
+
+
+MAINTENANCE
+===========
+
+The Work has the status `maintained' if the Work is being maintained by at
+least one Current Maintainer, or if the Work contains a statement that the Work
+is maintained.  If the Work has the status `maintained' then the Current
+Maintainer may make any changes to the Work, and these changes are considered
+part of the Work.
+
+The Work has the status `unmaintained' if it contains a statement that it is no
+longer maintained.  If the Work has the status `unmaintained' then correctable
+bugs may be fixed by anyone.  A `bug' is any malfunction (or potential
+malfunction) of the Work that interferes with its ability to perform its
+documented tasks.
+
+If the Work is unmaintained and the copyright holder(s) agree, a person who has
+corrected bugs may be named the Current Maintainer of the repaired Work.
+
+
+LIMITATION OF LIABILITY
+=======================
+
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE WORK IS PROVIDED `AS IS',
+WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT
+LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT.
+
+IN NO EVENT WILL THE COPYRIGHT HOLDER, THE AUTHORS, OR ANY OTHER PARTY WHO MAY
+COPY AND/OR (RE)DISTRIBUTE THE WORK AS PERMITTED IN SECTION 6 ABOVE, BE LIABLE
+TO YOU FOR ANY DAMAGES ARISING OUT OF THE USE OF THE WORK, WHETHER ARISING FROM
+TORT (INCLUDING NEGLIGENCE), CONTRACT, OR ANY OTHER THEORY OF LIABILITY, EVEN
+IF SUCH PARTIES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+WHETHER AND HOW TO DISTRIBUTE WORKS UNDER THIS LICENSE
+======================================================
+
+The following applies to any work that contains the notice
+
+    This work may be distributed and/or modified under the conditions
+    of the LaTeX Project Public License,
+    either version 1.3c of this license or (at your option) any later
+    version.  The latest version of this license is in
+      http://www.latex-project.org/lppl.txt
+    and version 1.3c or later is part of all distributions of LaTeX
+    version 2008-05-04 or later.
+
+and that is not part of the Work.  If your work is unrelated to TeX, and it does
+not contain a notice as above, then you may omit the remainder of this section.
+
+    1.  If you are the Current Maintainer of the work, you should include a
+        statement on how people can contact you in case they have questions or
+        need support.  If you are not the Current Maintainer of the Work, you
+        should obtain permission from the Current Maintainer before distributing
+        your modification.
+
+    2.  Your distribution should contain a copy of this license and a statement
+        of the status of the Work (maintained or unmaintained).
+
+    3.  If you are not the Current Maintainer, you need to make sure you do not
+        transfer the right of maintenance to another person.  This means that, if
+        you plan to distribute a modification, then your modified work should
+        include the name of the Current Maintainer in the `Maintained by...' field.
+
+    4.  If your work is intended for use with TeX or related programs, we
+        recommend that you include a `\ProvidesPackage' or `\ProvidesClass' (or
+        similar) macro stating the name, version, and date of the Work.
+
+    5.  If the Work is intended to be used with a format (such as LaTeX or a
+        similar system), we recommend that you include a `\ProvidesPackage' or
+        `\ProvidesClass' (or similar) macro in your file so that the version of
+        the Work can be easily determined.  This will help users see whether they
+        are using the latest version of the Work.
+
+    6.  If you maintain a program that requires other programs to run, you
+        should specify in your documentation which programs are required.
+
+    7.  If you are not the Current Maintainer but would like to become one,
+        you can ask the Current Maintainer to relinquish maintenance to you.
+        If the Work is unmaintained, and you would like to take over maintenance,
+        you can change the `Maintained by' field to your name.  In doing so you
+        should include a statement explaining how people can contact you.
+
+    8.  If you are not the Current Maintainer and you want to make a
+        modification that does not create a Derived Work, you should contact the
+        Current Maintainer and offer to collaborate with him or her.  Please do
+        not distribute your modification separately, as that will confuse users.
+
+    9.  The Work has status `maintained' if the Current Maintainer is willing to
+        accept bug reports and fix bugs.  If the Work is unmaintained, please
+        attempt to coordinate with other users to find a new maintainer before
+        you take over maintenance.  This will help to ensure that the Work remains
+        useful to users even after the original maintainer is no longer able to
+        maintain it.
+
+The LaTeX Project Public License, LPPL, was designed to address the special
+considerations associated with writing and distributing programs for TeX,
+including macro packages, fonts, and documentation, and the files generated by
+these programs.  In addition to the general types of modifications of Programs
+and Documentations that are usually permitted under free software licenses, this
+license specifically allows for configuration changes that enable the Work to
+work with other programs, configuration files, and build scripts.

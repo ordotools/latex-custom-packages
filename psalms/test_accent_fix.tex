@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage{psalms}
+
+% Define styling to make accents visible
+\def\PsalmStyleAccent#1{\textbf{[ACCENT:#1]}}
+\def\PsalmStylePrep#1{\textit{#1}}
+\def\PsalmStyleOther#1{#1}
+\def\PsalmJoiner{·}
+
+\begin{document}
+
+\section*{Test: Accent Detection for "portæ æternáles"}
+
+Testing the mediant with preset 1D (mediant has pre=2, post=1).
+
+Expected: The accent should be on "ná" in "æternáles", NOT on "æ".
+
+\bigskip
+
+\noindent\psalm[preset=1D]{23}
+
+\bigskip
+
+Look at verse 7: "et elevámini, portæ æternáles:"
+
+The accent should be marked on syllable "ná" (ACCENT:ná), not on "æ".
+
+\end{document}
+
+
