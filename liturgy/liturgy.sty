@@ -122,6 +122,9 @@
 
 \newcommand\inlinerubric[1]{{\color{gregoriocolor}\footnotesize #1}}
 
+\newcommand\Prubric[1]{\black{\P} {\color{gregoriocolor}\footnotesize #1}}
+\newcommand\PrubricSkip[1]{\smallskip\black{\P} {\color{gregoriocolor}\footnotesize #1}}
+
 
 %-------------------------------------------------------------------%
 % variable doxologies {this is very much a work in progress!!}
@@ -249,6 +252,7 @@
 \newcommand\cycle[1]{\chapter*{#1}}
 \newcommand\feastdate[1]{\section*{#1}} % FIXME: remove the numbering
 \newcommand\feast[1]{\subsection{#1}}
+\newcommand\SuperFeria[1]{\newpage \vspace*{5em} {\centering\Huge\scshape\bfseries #1\par} \medskip\hrule \vspace{5em}} % for a feria in an hour book (e.g., Feria II in prime book)
 \newcommand\feria[1]{\subsection{#1}}
 \newcommand\hour[1]{\subsubsection{#1}}
 
@@ -311,21 +315,35 @@
 
 
 %-------------------------------------------------------------------%
-% Common commands
+% Commands
 %-------------------------------------------------------------------%
 
 % Variant that takes a full sentence/paragraph
+% \newcommand\dropcap[1]{%
+%   \let\firstchar\relax
+%   \def\firstchar##1##2\relax{%
+% 	  \lettrine[lines=2]{\MakeUppercase{##1}}{##2}% TODO: get a variant with a red color?
+%   }%
+%   \firstchar#1\relax
+% }
+
+
+\makeatletter
 \newcommand\dropcap[1]{%
-  \let\firstchar\relax
-  \def\firstchar##1##2\relax{%
-      \lettrine[lines=2]{\color{gregoriocolor}\MakeUppercase{##1}}{##2}%
+  \def\split@first##1 ##2\@nil{%
+    \edef\first@letter{\expandafter\@car##1\@nil}%
+    \edef\rest@letters{\expandafter\@cdr##1\@nil}%
+    \renewcommand{\LettrineTextFont}{\MakeUppercase}%
+    \lettrine[lines=2]{\color{gregoriocolor}\MakeUppercase{\first@letter}}{\rest@letters}%
+    \if\relax\detokenize{##2}\relax\else\ ##2\fi
   }%
-  \firstchar#1\relax
+  \expandafter\split@first#1 \@nil
 }
+\makeatother
 
 \makeatletter
 \newcommand{\oration}[1]{%
-    \redtitle{Oratio.}
+	{\hspace{2em}{Or\'emus.} \hfill {\itshape\footnotesize Oratio.}\hspace{2em}}\nopagebreak
   % Split into first word (#1) and rest (#2)
   \def\split@first##1 ##2\@nil{%
     % Extract first token and the rest of that first word
@@ -339,27 +357,95 @@
   }%
   % Call the splitter; the added space ensures it always works
   \expandafter\split@first#1 \@nil
-  \amen
+  \amen\medskip
+}
+\makeatother
+
+\makeatletter
+\newcommand{\pretioOration}[1]{%
+	{\hspace{2em}{\rubric{Et absolute sine \black{Oremus.}}} \hfill {\itshape\footnotesize Oratio.}\hspace{2em}}\nopagebreak
+  \def\split@first##1 ##2\@nil{%
+    \edef\first@letter{\expandafter\@car##1\@nil}%
+    \edef\rest@letters{\expandafter\@cdr##1\@nil}%
+    \renewcommand{\LettrineTextFont}{\MakeUppercase}%
+    \lettrine[lines=2]{\color{gregoriocolor}\MakeUppercase{\first@letter}}{\rest@letters}%
+    \if\relax\detokenize{##2}\relax\else\ ##2\fi
+  }%
+  \expandafter\split@first#1 \@nil
+  \amen\medskip
 }
 \makeatother
 
 
-\newcommand\vbar[0]{{\color{gregoriocolor}\Vbar} }
+\makeatletter
+\newcommand{\lectioBrevis}[2]{%
+	{\hspace{2em}{} \hfill {\itshape\footnotesize #2}\hspace{2em}}\nopagebreak
+  \def\split@first##1 ##2\@nil{%
+    \edef\first@letter{\expandafter\@car##1\@nil}%
+    \edef\rest@letters{\expandafter\@cdr##1\@nil}%
+    \renewcommand{\LettrineTextFont}{\MakeUppercase}%
+    \lettrine[lines=2]{\color{gregoriocolor}\MakeUppercase{\first@letter}}{\rest@letters}%
+    \if\relax\detokenize{##2}\relax\else\ ##2\fi
+  }%
+  \expandafter\split@first#1 \@nil
+  \newline \rbar Deo gr\'atias.
+}
+\makeatother
 
-\newcommand\rbar[0]{{\color{gregoriocolor}\Rbar} }
+\newcommand\vbar[0]{{\color{gregoriocolor}\Vbar.} }
+
+\newcommand\rbar[0]{{\color{gregoriocolor}\Rbar.} }
 
 \newcommand{\verseResponse}[2]{
-	\indent \vbar #1\\
-	\indent \rbar #2\\
+	\makebox[1em][l]{\vbar} #1\\
+	\makebox[1em][l]{\rbar} #2\\
+	% \indent \vbar #1\\
+	% \indent \rbar #2\\
 }
+
+\newcommand{\inlineVerseResponse}[2]{
+	\indent \vbar #1 \rbar #2\\
+}
+
+\newcommand\cross{{\color{gregoriocolor}\grecross\ }}
 
 \newcommand\gloriapatri[0]{
 \verseResponse{Glória Patri, et Fílio, * et Spirítui Sancto.}{Sicut erat in princípio, et nunc, et semper, * et in sǽcula sæculórum. Amen. \inlinerubric{P.T.} Allelúja.}
 }
 
+\newcommand\dv{\verseResponse{Dóminus vobíscum.}{Et cum spíritu tuo.}}
+
 \newcommand\amen[0]{
 	\rbar Amen.
 }
+
+
+
+% \capitulum{Regi s\ae cul\'orum imort\'ali et invis\'ibili, \dagger\ soli Deo ho\textit{nor et} \textbf{gl\'o}ria * in s\ae cula s\ae cul\'orum \textbf{A}men.}{1. Tim. 1:17.}
+
+
+\newcommand\capitulum[2]{
+	% TODO: write a function in psalms.sty for marking up the text
+	{\hspace{2em}{\scshape Capitulum} \hfill {#2}\hspace{2em}}
+	\dropcap{#1}\\
+	\rbar Deo Gratias.
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \newcounter{antiphon}\setcounter{antiphon}{1}
 \newcounter{allantiphon}\setcounter{allantiphon}{1}
