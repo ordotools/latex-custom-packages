@@ -626,8 +626,8 @@ psalmtones.presets = {
 	["1g"]   = {
 		flex = { accents = {{ position=1, extra_before=0, extra_after=0, pre=0, post=0 }} },
 		mediant = { accents = {
-			{ position=2, extra_before=0, extra_after=1, pre=0, post=1 },
-			{ position=1, extra_before=0, extra_after=1, pre=0, post=1 }
+			{ position=2, extra_before=0, extra_after=0, pre=0, post=1 },
+			{ position=1, extra_before=0, extra_after=0, pre=0, post=1 }
 		}
 		},
 		termination = { accents = {{ position=1, extra_before=0, extra_after=1, pre=2, post=0 }} }
