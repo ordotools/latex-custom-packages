@@ -1,13 +1,13 @@
 -- psalmtones.lua  (UTF-8)
 -- Liber-style psalm-tone styling from syllables.
 -- -----------------------------------------------------------------------------
--- Copyright (C) 2024 Frank Barnes
+-- Copyright (C) 2025 Gregory R. Barnes
 -- This work may be distributed and/or modified under the conditions of the
 -- LaTeX Project Public License, version 1.3c or (at your option) any later
 -- version. The latest version of this license is available at
 -- https://www.latex-project.org/lppl/
 -- This work has the LPPL maintenance status "maintained".
--- The Current Maintainer of this work is Frank Barnes.
+-- The Current Maintainer of this work is Gregory R. Barnes.
 -- -----------------------------------------------------------------------------
 
 local psalmtones = {}
