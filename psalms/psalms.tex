@@ -1,0 +1,88 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{psalms}[2024/12/19 v1.0 Latin Psalm Typesetting with Gregorian Chant Tones]
+
+% Package options
+\newif\ifpsalms@debug
+\newif\ifpsalms@orthographic
+\DeclareOption{debug}{\psalms@debugtrue}
+\DeclareOption{orthographic}{\psalms@orthographictrue}
+\DeclareOption{positional}{\psalms@orthographicfalse}
+\ProcessOptions\relax
+
+% Engine / language requirements
+\RequirePackage{fontspec}
+\RequirePackage[latin]{babel}
+\RequirePackage{xparse}
+
+% Load Lua module
+\directlua{psalmtones = require("psalmtones")}
+
+% Set debug mode if requested
+\ifpsalms@debug
+  \directlua{psalmtones.debug = true}
+\fi
+
+% Directory & extension for psalm text files
+\newcommand*\PsalmDir{psalms}
+\newcommand*\PsalmExt{txt}
+
+% Divider and joiner
+\newcommand*\PsalmHalfDivider{*}
+\newcommand*\PsalmJoiner{} % "-" to visualize syllables while debugging
+
+% Styles
+\newcommand*\PsalmStyleAccent{\bfseries}
+\newcommand*\PsalmStylePrep{\itshape}
+\newcommand*\PsalmStyleOther{} % normal
+
+% Accent mode control (positional | orthographic)
+\newcommand*\PsalmAccentMode{positional}
+\newcommand*\SetPsalmAccentMode[1]{\renewcommand*\PsalmAccentMode{#1}}
+
+% Set accent mode based on package option
+\ifpsalms@orthographic
+  \SetPsalmAccentMode{orthographic}
+\fi
+
+% Process one line (kept for ad-hoc tests)
+\newcommand*\PsalmLine[1]{\directlua{psalmtones.process_line([[#1]])}}
+
+% Main psalm command: \psalm{<number>}{<mode>}
+% Example: \psalm{118}{8G}
+\NewDocumentCommand{\psalm}{m m}{%
+  % capture args into expandable macros so [[...]] gets plain text
+  \edef\psalmnum{\unexpanded{#1}}%
+  \edef\psalmpreset{\unexpanded{#2}}%
+  \begingroup
+    % also capture config macros (dir/ext/accent) now, so Lua gets strings
+    \edef\psalmdir{\unexpanded{\PsalmDir}}%
+    \edef\psalmext{\unexpanded{\PsalmExt}}%
+    \edef\psalmaccent{\unexpanded{\PsalmAccentMode}}%
+    \directlua{
+      local preset = [[\psalmpreset]]
+      if preset == "" then preset = nil end
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]])
+    }%
+  \endgroup
+}
+
+% Legacy command for backward compatibility: \psalm[<preset>]{<number>}
+\NewDocumentCommand{\psalmlegacy}{O{} m}{%
+  % capture args into expandable macros so [[...]] gets plain text
+  \edef\psalmpreset{\unexpanded{#1}}%
+  \edef\psalmnum{\unexpanded{#2}}%
+  \begingroup
+    % also capture config macros (dir/ext/accent) now, so Lua gets strings
+    \edef\psalmdir{\unexpanded{\PsalmDir}}%
+    \edef\psalmext{\unexpanded{\PsalmExt}}%
+    \edef\psalmaccent{\unexpanded{\PsalmAccentMode}}%
+    \directlua{
+      local preset = [[\psalmpreset]]
+      if preset == "" then preset = nil end
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]])
+    }%
+  \endgroup
+}
+
+% Package ends here - no \endinput needed as this is a .tex file
+% For a proper .sty file, rename this to psalms.sty and add \endinput at the end

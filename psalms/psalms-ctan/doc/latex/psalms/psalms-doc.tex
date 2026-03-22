@@ -1,0 +1,126 @@
+\documentclass{ltxdoc}
+\usepackage{fontspec}
+\usepackage[latin]{babel}
+\usepackage{microtype}
+\usepackage{hyperref}
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+
+\title{The \textsf{psalms} package\\Typesetting Latin psalms to Gregorian tones}
+\author{Frank Barnes}
+\date{2024-12-19}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The \textsf{psalms} package typesets Latin psalm texts with psalm tone
+accents that follow the classic Gregorian mediant and termination formulas.
+It combines Lua-based syllable detection with Lua\LaTeX\ for robust
+accenting, and it ships with UTF-8 psalm texts for the 150 psalms plus
+canticles used in the Divine Office.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+The package provides straightforward commands to select a psalm and tone
+preset.  It expects UTF-8 encoded source texts and is intended for use with
+Lua\LaTeX.  Example:
+\begin{verbatim}
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage{psalms}
+\begin{document}
+\psalm{117}{8G}
+\end{document}
+\end{verbatim}
+
+\section{Loading the package}
+
+\begin{description}
+  \item[Engine] Lua\LaTeX\ is required.  The package relies on Lua for
+  syllabification and psalm tone logic.
+  \item[Dependencies] \textsf{fontspec}, \textsf{babel} with Latin support,
+  \textsf{xparse}, \textsf{enumitem}, and \textsf{lettrine}.
+\end{description}
+
+\section{Main command}
+
+\DescribeMacro{\psalm}
+\begin{quote}
+\verb|\psalm{<number>}{<preset>}|
+\end{quote}
+The first argument is the psalm number.  The second chooses the tone preset
+(for instance \verb|1|, \verb|2D|, \verb|7c|, or \verb|8G|).  Tone presets
+are defined in the \texttt{psalmtones.lua} helper module.
+
+\DescribeMacro{\psalmlegacy}
+This legacy wrapper keeps compatibility with documents that previously used
+\verb|\psalm[<preset>]{<number>}|.
+
+\section{Package options}
+
+\DescribeOption{orthographic}
+Switches accent detection to orthographic mode, which looks for acute marks
+(á, é, í, ó, ú, ý) or apostrophes.  Without marks, the positional fallback
+(penultimate syllable) is used.
+
+\DescribeOption{positional}
+Explicitly sets positional mode (the default).
+
+\DescribeOption{versenumbers}
+Enables verse numbers globally.  Numbers are formatted with an
+\textsf{enumitem} list that can be customised with
+\verb|\SetPsalmVerseStyle|.
+
+\DescribeOption{gloriapatri}
+Appends the Gloria Patri to the end of every psalm.
+
+\DescribeOption{dropcap}
+Activates a decorative initial letter for the first verse using
+\textsf{lettrine}.  Dropcap dimensions are controlled through the
+\verb|\PsalmDropcap*| macros.
+
+\DescribeOption{debug}
+Writes syllable diagnostics to the log file, which helps when tuning the
+syllable splitter or tone presets.
+
+\section{Run-time configuration}
+
+The package exposes several helper macros:
+\begin{description}
+  \item[\verb|\SetPsalmAccentMode{<mode>}|] Switch accent logic at run time.
+  \item[\verb|\SetPsalmVerseNumbers{true/false}|] Toggle verse numbers.
+  \item[\verb|\SetPsalmGloriaPatri{true/false}|] Control the doxology.
+  \item[\verb|\SetPsalmDropcap{true/false}|] Enable or disable dropcaps.
+  \item[\verb|\SuppressSyllabification|] Skip syllable recomputation for the
+  next psalm, useful for fully premarked texts.
+\end{description}
+
+Typography helpers can be redefined as needed, e.g.\
+\verb|\PsalmStyleAccent| to change highlighted syllables, or
+\verb|\PsalmHalfDivider| to adjust the mediant divider.
+
+\section{File layout}
+
+Psalm texts live in the \texttt{tex/latex/psalms/psalms/} directory as UTF-8
+\texttt{.txt} files.  Users can point the package to an alternate directory
+by redefining \verb|\PsalmDir| or the \verb|\PsalmExt|.
+
+The Lua helper \texttt{psalmtones.lua} resides in
+\texttt{tex/lualatex/psalms/} and is loaded via \verb|\directlua|.
+
+\section{Building the documentation}
+
+Run \verb|lualatex psalms-doc.tex| twice to resolve cross references.  The
+package documentation depends on \textsf{ltxdoc} and the same runtime
+requirements as the package itself.
+
+\StopEventually{}
+\PrintChanges
+\PrintIndex
+
+\end{document}

@@ -1,0 +1,166 @@
+\ProvidesPackage{liturgicalbooklet}[2025/09/17 v3.8 Liturgical booklet sizing (memoir)]
+% Requires the memoir document class.
+
+% ----- Package setup -----
+\RequirePackage{iftex}
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=lb2,prefix=lb@}
+
+% Options
+\DeclareStringOption[a5]{papersize}          % a5|a6|halfletter|letter|custom
+\DeclareStringOption[]{stockwidth}           % for papersize=custom
+\DeclareStringOption[]{stockheight}
+\DeclareStringOption[]{trimwidth}            % defaults to stock if empty
+\DeclareStringOption[]{trimheight}
+
+\DeclareStringOption[breviary]{layout}       % breviary (2-col) | missal (1-col)
+\DeclareStringOption[auto]{columns}          % auto|1|2
+
+\DeclareStringOption[0.78]{textheightfraction}
+\DeclareStringOption[0.74]{textwidthfraction}
+
+\DeclareStringOption[1.5]{foreedgeratio}     % outer:inner
+\DeclareStringOption[1.2]{verticalratio}     % lower:upper
+
+\DeclareStringOption[0.035]{colsepfraction}  % fraction of \textwidth
+\DeclareStringOption[thin]{colrule}          % none|thin|med
+
+\DeclareStringOption[B03A2E]{rubriccolor}    % hex without #
+
+\ProcessKeyvalOptions*
+
+\makeatletter
+
+% Ensure memoir is loaded
+\@ifclassloaded{memoir}{}{%
+  \PackageError{liturgicalbooklet}{This package requires the memoir document class}%
+    {Use \string\documentclass{memoir} in your main .tex.}%
+}
+
+% Required packages
+\RequirePackage{xcolor}
+\RequirePackage{multicol}
+
+% ----- Page dimensions -----
+\newcommand\lb@setpage{%
+  % Determine stock size
+  \def\ps@a{a5}\def\ps@b{a6}\def\ps@c{halfletter}\def\ps@d{letter}\def\ps@e{custom}%
+  \ifx\lb@papersize\ps@a
+    \stockaiv  % A5: 148mm x 210mm
+  \else\ifx\lb@papersize\ps@b
+    \stockavi  % A6: 105mm x 148mm
+  \else\ifx\lb@papersize\ps@c
+    % Half letter: 5.5in x 8.5in
+    \setstocksize{8.5in}{5.5in}
+  \else\ifx\lb@papersize\ps@d
+    \stockusletter  % Letter: 8.5in x 11in
+  \else\ifx\lb@papersize\ps@e
+    % Custom size
+    \ifx\lb@stockwidth\@empty
+      \PackageError{liturgicalbooklet}{papersize=custom requires stockwidth}{}%
+    \fi
+    \ifx\lb@stockheight\@empty
+      \PackageError{liturgicalbooklet}{papersize=custom requires stockheight}{}%
+    \fi
+    \setstocksize{\lb@stockheight}{\lb@stockwidth}
+  \else
+    \stockaiv  % Default to A5
+  \fi\fi\fi\fi\fi
+  
+  % Set trimmed size (usually same as stock)
+  \ifx\lb@trimwidth\@empty
+    \settrimmedsize{\stockheight}{\stockwidth}{*}
+  \else
+    \ifx\lb@trimheight\@empty
+      \PackageError{liturgicalbooklet}{trimheight required with trimwidth}{}%
+    \fi
+    \settrimmedsize{\lb@trimheight}{\lb@trimwidth}{*}
+  \fi
+  
+  % No trim marks by default
+  \settrims{0pt}{0pt}
+}
+
+% ----- Layout calculations -----
+\newcommand\lb@setlayout{%
+  % Set text block size as fractions of page
+  \settypeblocksize{\lb@textheightfraction\paperheight}%
+                    {\lb@textwidthfraction\paperwidth}{*}
+  
+  % Set margin ratios
+  % Memoir uses the format inner:outer, upper:lower
+  % Our options use outer/inner and lower/upper
+  % So we need to invert: if outer/inner = 1.5, then inner:outer = 1:1.5
+  \setlrmargins{*}{*}{\lb@foreedgeratio}  % inner:outer = 1:ratio
+  \setulmargins{*}{*}{\lb@verticalratio}  % upper:lower = 1:ratio
+  
+  % Let memoir calculate the actual dimensions
+  \checkandfixthelayout
+}
+
+% ----- Column setup -----
+\newcount\lb@cols
+
+\newcommand\lb@setcolumns{%
+  % Determine column count
+  \lb@cols=1\relax
+  \def\col@auto{auto}\def\col@one{1}\def\col@two{2}%
+  \def\lay@brev{breviary}\def\lay@miss{missal}%
+  
+  \ifx\lb@columns\col@two
+    \lb@cols=2\relax
+  \else\ifx\lb@columns\col@one
+    \lb@cols=1\relax
+  \else % auto
+    \ifx\lb@layout\lay@brev
+      \lb@cols=2\relax
+    \else
+      \lb@cols=1\relax
+    \fi
+  \fi\fi
+  
+  % Column separation (will be set after textwidth is known)
+  \AtBeginDocument{%
+    \setlength\columnsep{\lb@colsepfraction\textwidth}%
+    % Column rule
+    \def\rule@none{none}\def\rule@thin{thin}\def\rule@med{med}%
+    \ifx\lb@colrule\rule@none
+      \setlength\columnseprule{0pt}%
+    \else\ifx\lb@colrule\rule@thin
+      \setlength\columnseprule{0.4pt}%
+    \else\ifx\lb@colrule\rule@med
+      \setlength\columnseprule{0.8pt}%
+    \else
+      \setlength\columnseprule{0.4pt}%
+    \fi\fi\fi
+  }%
+}
+
+% Column environment
+\newenvironment{lbcolumns}{%
+  \ifnum\lb@cols=2\relax
+    \begin{multicols}{2}%
+  \fi
+}{%
+  \ifnum\lb@cols=2\relax
+    \end{multicols}%
+  \fi
+}
+
+% ----- Colors -----
+\newcommand\lb@setcolors{%
+  \definecolor{gregoriocolor}{HTML}{\lb@rubriccolor}%
+}
+
+% ----- Main setup -----
+\newcommand\liturgicalbookletsetup{%
+  \lb@setpage
+  \lb@setlayout
+  \lb@setcolumns
+  \lb@setcolors
+}
+
+% Run at document begin
+\AtBeginDocument{\liturgicalbookletsetup}
+
+\makeatother

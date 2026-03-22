@@ -2,7 +2,10 @@
 
 A collection of custom style packages, designed for personal use.
 
-- [Psalms](#psalms-package)
+- [Liturgical Booklet](liturgicalbooklet/README.md)
+- [Psalms](psalms/README.md)
+- [Rubrics](rubrics/README.md)
+- [Sermon](sermon/README.md)
 
 ## How to use (macOS guide)
 
