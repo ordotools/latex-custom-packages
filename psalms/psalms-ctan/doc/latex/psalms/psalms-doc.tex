@@ -84,6 +84,13 @@ Activates a decorative initial letter for the first verse using
 \textsf{lettrine}.  Dropcap dimensions are controlled through the
 \verb|\PsalmDropcap*| macros.
 
+\DescribeOption{firstversegabc}
+Renders only the first non-empty verse as a Gregorio snippet
+\verb|\gabcsnippet{...}| generated from the selected tone preset.  When this
+option is enabled, first-verse chant output takes precedence over
+\verb|dropcap| for verse 1.  If the selected preset has no GABC definition or
+marker mapping fails, the package falls back to the normal text-rendered verse.
+
 \DescribeOption{debug}
 Writes syllable diagnostics to the log file, which helps when tuning the
 syllable splitter or tone presets.
@@ -96,6 +103,8 @@ The package exposes several helper macros:
   \item[\verb|\SetPsalmVerseNumbers{true/false}|] Toggle verse numbers.
   \item[\verb|\SetPsalmGloriaPatri{true/false}|] Control the doxology.
   \item[\verb|\SetPsalmDropcap{true/false}|] Enable or disable dropcaps.
+  \item[\verb|\SetPsalmFirstVerseGabc{true/false}|] Toggle first-verse chant
+  rendering with \verb|\gabcsnippet| output.
   \item[\verb|\SuppressSyllabification|] Skip syllable recomputation for the
   next psalm, useful for fully premarked texts.
 \end{description}
@@ -112,6 +121,44 @@ by redefining \verb|\PsalmDir| or the \verb|\PsalmExt|.
 
 The Lua helper \texttt{psalmtones.lua} resides in
 \texttt{tex/lualatex/psalms/} and is loaded via \verb|\directlua|.
+
+\section{First-verse chant markers}
+
+The first-verse chant mode uses raw GABC cadence fragments in the Lua tone
+table with marker tokens:
+\begin{description}
+  \item[\texttt{gr1}] Accented note group.  Accented sung syllables are mapped
+  to these slots first.
+  \item[\texttt{gr}] Extra note group for non-accent extension syllables.
+  \item[Neutral notes] Fixed tone material that is emitted as-is and does not
+  consume marker slots.
+\end{description}
+
+Markers are defined per cadence (flex, mediant, termination) for each preset
+key (for example \texttt{1D}, \texttt{4E}, \texttt{8G}, \texttt{8G-star},
+\texttt{peregrinus}).
+
+\section{Example}
+
+Normal text mode:
+\begin{verbatim}
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage{psalms}
+\begin{document}
+\psalm{117}{8G}
+\end{document}
+\end{verbatim}
+
+First-verse chant mode with the same preset:
+\begin{verbatim}
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage[firstversegabc]{psalms}
+\begin{document}
+\psalm{117}{8G}
+\end{document}
+\end{verbatim}
 
 \section{Building the documentation}
 

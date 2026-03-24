@@ -1,0 +1,19 @@
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage[firstversegabc,debug]{psalms}
+\renewcommand*\PsalmDir{../psalms}
+
+\providecommand{\gabcsnippet}[1]{\typeout{GABC-SNIPPET:#1}}
+
+\newcommand{\RunCase}[1]{%
+  \typeout{OPTION-CASE-BEGIN:#1}%
+  \psalm{1}{#1}%
+  \typeout{OPTION-CASE-END:#1}%
+}
+
+\begin{document}
+\RunCase{1D}
+\RunCase{4E}
+\RunCase{8G}
+\RunCase{peregrinus}
+\end{document}

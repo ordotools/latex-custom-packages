@@ -16,12 +16,14 @@
 \newif\ifpsalms@versenumbers
 \newif\ifpsalms@gloriapatri
 \newif\ifpsalms@dropcap
+\newif\ifpsalms@firstversegabc
 \DeclareOption{debug}{\psalms@debugtrue}
 \DeclareOption{orthographic}{\psalms@orthographictrue}
 \DeclareOption{positional}{\psalms@orthographicfalse}
 \DeclareOption{versenumbers}{\psalms@versenumberstrue}
 \DeclareOption{gloriapatri}{\psalms@gloriapatritrue}
 \DeclareOption{dropcap}{\psalms@dropcaptrue}
+\DeclareOption{firstversegabc}{\psalms@firstversegabctrue}
 \ProcessOptions\relax
 
 % Engine / language requirements
@@ -66,11 +68,13 @@
 \newcommand*\PsalmGloriaPatri{false}
 \newcommand*\PsalmSuppressSyllabification{false}
 \newcommand*\PsalmDropcap{false}
+\newcommand*\PsalmFirstVerseGabc{false}
 
 % Commands to control global options
 \newcommand*\SetPsalmVerseNumbers[1]{\renewcommand*\PsalmVerseNumbers{#1}}
 \newcommand*\SetPsalmGloriaPatri[1]{\renewcommand*\PsalmGloriaPatri{#1}}
 \newcommand*\SetPsalmDropcap[1]{\renewcommand*\PsalmDropcap{#1}}
+\newcommand*\SetPsalmFirstVerseGabc[1]{\renewcommand*\PsalmFirstVerseGabc{#1}}
 
 % Dropcap style customization
 % Default values for lettrine
@@ -97,6 +101,9 @@
 \fi
 \ifpsalms@dropcap
   \SetPsalmDropcap{true}
+\fi
+\ifpsalms@firstversegabc
+  \SetPsalmFirstVerseGabc{true}
 \fi
 
 % Local command to suppress syllabification for a particular psalm
@@ -125,10 +132,11 @@
     \edef\psalmdropcaplhang{\unexpanded{\PsalmDropcapLhang}}%
     \edef\psalmdropcaploversize{\unexpanded{\PsalmDropcapLoversize}}%
     \edef\psalmdropcaplraise{\unexpanded{\PsalmDropcapLraise}}%
+    \edef\psalmfirstversegabc{\unexpanded{\PsalmFirstVerseGabc}}%
     \directlua{
       local preset = [[\psalmpreset]]
       if preset == "" then preset = nil end
-      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]], [[\psalmdropcap]], [[\psalmdropcaplines]], [[\psalmdropcaplhang]], [[\psalmdropcaploversize]], [[\psalmdropcaplraise]])
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]], [[\psalmdropcap]], [[\psalmdropcaplines]], [[\psalmdropcaplhang]], [[\psalmdropcaploversize]], [[\psalmdropcaplraise]], [[\psalmfirstversegabc]])
     }%
   \endgroup
 }
@@ -151,10 +159,11 @@
     \edef\psalmdropcaplhang{\unexpanded{\PsalmDropcapLhang}}%
     \edef\psalmdropcaploversize{\unexpanded{\PsalmDropcapLoversize}}%
     \edef\psalmdropcaplraise{\unexpanded{\PsalmDropcapLraise}}%
+    \edef\psalmfirstversegabc{\unexpanded{\PsalmFirstVerseGabc}}%
     \directlua{
       local preset = [[\psalmpreset]]
       if preset == "" then preset = nil end
-      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]], [[\psalmdropcap]], [[\psalmdropcaplines]], [[\psalmdropcaplhang]], [[\psalmdropcaploversize]], [[\psalmdropcaplraise]])
+      psalmtones.run_psalm([[\psalmnum]], preset, [[\psalmdir]], [[\psalmext]], [[\psalmaccent]], [[\psalmversenumbers]], [[\psalmgloriapatri]], [[\psalmsuppresssyll]], [[\psalmdropcap]], [[\psalmdropcaplines]], [[\psalmdropcaplhang]], [[\psalmdropcaploversize]], [[\psalmdropcaplraise]], [[\psalmfirstversegabc]])
     }%
   \endgroup
 }

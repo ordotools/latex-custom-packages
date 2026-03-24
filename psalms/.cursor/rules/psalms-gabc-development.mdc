@@ -1,0 +1,37 @@
+---
+description: Psalms GABC development conventions and safeguards
+alwaysApply: true
+---
+
+# Psalms GABC Development Rule
+
+Use these conventions for all psalm first-verse chant work.
+
+## Marker semantics
+
+- `gr1` = accented note group; map accented sung syllables here first.
+- `gr` = extra note group for non-accent extension notes.
+- Neutral notes are fixed tone material and must not consume accent slots.
+- If a cadence cannot be mapped cleanly, fall back to text rendering.
+
+## Tone table location and naming
+
+- Keep chant tone tables in `psalms-ctan/tex/lualatex/psalms/psalmtones.lua`.
+- Reuse existing preset keys exactly (`1D`, `4E`, `8G`, `8G-star`, `peregrinus`).
+- Store raw gabc cadence fragments with marker tokens for flex/mediant/termination.
+- Do not introduce ad-hoc key aliases unless all call sites are updated.
+
+## Text and chant cadence sync
+
+- Text-render and chant-render must share cadence-selection logic.
+- Any change to accent or syllable tokenization must be reflected in gabc mapping behavior.
+- Keep non-chant output byte-for-byte stable unless a change is explicitly intended.
+
+## Minimum regression checks
+
+Run/verify at least:
+
+- Non-chant mode: representative tones still format verses correctly.
+- Chant mode: verse 1 emits only `\gabcsnippet{...}` when enabled.
+- Fallback path: missing gabc preset or mapping failure reverts verse 1 to text.
+- Representative tones include at least `1D`, `4E`, `8G`, and `peregrinus`.

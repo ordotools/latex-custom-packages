@@ -383,6 +383,69 @@ local function find_nth_accent_from_end(model, position)
 	return nil
 end
 
+-- Build syllable style map for a cadence (shared by text and GABC paths).
+local function build_cadence_syl_style_map(model, cadence_spec, cadence_type)
+	local syl_style = {} -- syl_style[i] = "accent" | "extra" | "prep" | "post_italic" | "other"
+	for i = 1, model.total_syls do
+		syl_style[i] = "other"
+	end
+
+	if not cadence_spec or not cadence_spec.accents then
+		return syl_style
+	end
+
+	for _, acc_spec in ipairs(cadence_spec.accents) do
+		local accent_pos = find_nth_accent_from_end(model, acc_spec.position)
+		if accent_pos then
+			local syllables_after = model.total_syls - accent_pos
+			if syllables_after >= acc_spec.post then
+				if cadence_type ~= "flex" then
+					syl_style[accent_pos] = "accent"
+				end
+
+				local syllables_before = accent_pos - 1
+
+				-- Pattern: accent -> extra_after -> post
+				if syllables_after >= acc_spec.post + acc_spec.extra_after then
+					for i = 1, acc_spec.extra_after do
+						local pos = accent_pos + i
+						if pos <= model.total_syls and syl_style[pos] == "other" then
+							syl_style[pos] = "extra"
+						end
+					end
+				end
+
+				-- Pattern: prep -> extra_before -> accent
+				if syllables_before >= acc_spec.pre + acc_spec.extra_before then
+					for i = 1, acc_spec.extra_before do
+						local pos = accent_pos - i
+						if pos >= 1 and syl_style[pos] == "other" then
+							syl_style[pos] = "extra"
+						end
+					end
+				end
+
+				for i = 1, acc_spec.pre do
+					local pos = accent_pos - i - acc_spec.extra_before
+					if pos >= 1 and syl_style[pos] == "other" then
+						syl_style[pos] = "prep"
+					end
+				end
+
+				if cadence_type == "flex" then
+					for i = accent_pos + 1, model.total_syls do
+						if syl_style[i] == "other" then
+							syl_style[i] = "post_italic"
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return syl_style
+end
+
 -- ===== Styling emitters =====
 local function strip_marker(s) return (s:gsub("%'%s*$","")) end
 
@@ -423,73 +486,7 @@ local function apply_new_cadence(tokens, cadence_spec, cadence_type)
 		for _, t in ipairs(tokens) do tex.sprint(t.text) end
 		return
 	end
-	
-	-- Build syllable styling map
-	local syl_style = {} -- syl_style[i] = "accent" | "extra" | "prep" | "post_italic" | "other"
-	for i = 1, model.total_syls do
-		syl_style[i] = "other"
-	end
-	
-	-- Process each accent in the spec
-	for _, acc_spec in ipairs(cadence_spec.accents) do
-		local accent_pos = find_nth_accent_from_end(model, acc_spec.position)
-		
-		if accent_pos then
-			-- Rule 4: Check if we have enough post-syllables
-			local syllables_after = model.total_syls - accent_pos
-			if syllables_after >= acc_spec.post then
-				-- We have enough syllables after this accent for the required post
-				
-				-- Mark the accent itself (unless it's a flex)
-				if cadence_type ~= "flex" then
-					syl_style[accent_pos] = "accent"
-				end
-				
-				-- Calculate syllables before accent
-				local syllables_before = accent_pos - 1
-				
-				-- Mark extra syllables after accent (only if we have enough beyond post requirement)
-				-- Pattern: accent → extra_after → post
-				if syllables_after >= acc_spec.post + acc_spec.extra_after then
-					for i = 1, acc_spec.extra_after do
-						local pos = accent_pos + i
-						if pos <= model.total_syls and syl_style[pos] == "other" then
-							syl_style[pos] = "extra"
-						end
-					end
-				end
-				
-				-- Mark extra syllables before accent (only if we have enough beyond prep requirement)
-				-- Pattern: prep → extra_before → accent
-				if syllables_before >= acc_spec.pre + acc_spec.extra_before then
-					for i = 1, acc_spec.extra_before do
-						local pos = accent_pos - i
-						if pos >= 1 and syl_style[pos] == "other" then
-							syl_style[pos] = "extra"
-						end
-					end
-				end
-				
-				-- Mark prep syllables (italic) before accent and extra_before
-				for i = 1, acc_spec.pre do
-					local pos = accent_pos - i - acc_spec.extra_before
-					if pos >= 1 and syl_style[pos] == "other" then
-						syl_style[pos] = "prep"
-					end
-				end
-				
-				-- Rule 6: For flex, italicize everything after accent
-				if cadence_type == "flex" then
-					for i = accent_pos + 1, model.total_syls do
-						if syl_style[i] == "other" then
-							syl_style[i] = "post_italic"
-						end
-					end
-				end
-			end
-			-- If not enough post syllables, this accent is ignored and we try the next accent
-		end
-	end
+	local syl_style = build_cadence_syl_style_map(model, cadence_spec, cadence_type)
 	
 	-- Now output the tokens with styling
 	local syl_idx = 0
@@ -802,6 +799,195 @@ psalmtones.presets = {
 	},
 }
 
+-- ===== Raw GABC cadences with marker slots =====
+-- Marker semantics:
+--   [gr1] = accented syllable group (mapped first)
+--   [gr]  = extra non-accent extension syllable group
+-- Any syllable not consumed by [gr1]/[gr] remains neutral tone material.
+psalmtones.gabc_tones = {
+	["1D"] = {
+		flex = "[gr1](g) (::)",
+		mediant = "[gr1](g) [gr](h) [gr1](g) [gr](f) (:)",
+		termination = "[gr](h) [gr](g) [gr1](f) (::)"
+	},
+	["4E"] = {
+		flex = "[gr1](g) (::)",
+		mediant = "[gr](h) [gr](h) [gr1](g) (:)",
+		termination = "[gr](h) [gr](h) [gr](g) [gr1](f) [gr](e) (::)"
+	},
+	["8G"] = {
+		flex = "[gr1](h) (::)",
+		mediant = "[gr1](i) (:)",
+		termination = "[gr](h) [gr](g) [gr1](f) (::)"
+	},
+	["8G-star"] = {
+		flex = "[gr1](h) (::)",
+		mediant = "[gr1](i) (:)",
+		termination = "[gr](h) [gr](g) [gr1](f) (::)"
+	},
+	["peregrinus"] = {
+		flex = "[gr1](h) (::)",
+		mediant = "[gr](h) [gr](h) [gr1](g) (:)",
+		termination = "[gr1](h) [gr](g) [gr1](f) (::)"
+	},
+}
+
+local function normalize_gabc_syllable_text(s)
+	s = strip_marker(s or "")
+	s = s:gsub("\\[%a@]+", "")
+	s = s:gsub("[%{%}%[%]%(%)]", "")
+	s = s:gsub("^%s+", ""):gsub("%s+$", "")
+	return s
+end
+
+local function count_gabc_markers(fragment, marker)
+	local pat
+	if marker == "gr1" then
+		pat = "%[gr1%]"
+	else
+		pat = "%[gr%]"
+	end
+	local _, n = fragment:gsub(pat, "")
+	return n
+end
+
+local function apply_gabc_marker_values(fragment, accent_syllables, extra_syllables)
+	local accent_i, extra_i = 1, 1
+	local missing = nil
+
+	fragment = fragment:gsub("%[gr1%]", function()
+		local syl = accent_syllables[accent_i]
+		accent_i = accent_i + 1
+		if not syl or syl == "" then
+			missing = "gr1"
+			return ""
+		end
+		return syl
+	end)
+	fragment = fragment:gsub("%[gr%]", function()
+		local syl = extra_syllables[extra_i]
+		extra_i = extra_i + 1
+		if not syl or syl == "" then
+			missing = "gr"
+			return ""
+		end
+		return syl
+	end)
+
+	if missing then
+		return nil, string.format("missing syllables for marker %s", missing)
+	end
+	return fragment
+end
+
+-- Map marker slots in a raw gabc cadence fragment from cadence syllable analysis.
+-- Returns gabc fragment string or nil,error.
+function psalmtones.map_gabc_markers(tokens, preset_name, cadence_type)
+	local preset = psalmtones.presets[preset_name]
+	local gabc_preset = psalmtones.gabc_tones[preset_name]
+	if not preset or not gabc_preset then
+		return nil, "missing preset"
+	end
+
+	local cadence_spec = preset[cadence_type]
+	local gabc_fragment = gabc_preset[cadence_type]
+	if not cadence_spec or not gabc_fragment then
+		return nil, "missing cadence data"
+	end
+
+	local model = build_word_model(tokens)
+	if model.total_syls == 0 then
+		return nil, "no syllables to map"
+	end
+
+	local style_map = build_cadence_syl_style_map(model, cadence_spec, cadence_type)
+	local accent_syllables, extra_syllables = {}, {}
+	for i = 1, model.total_syls do
+		local syl = normalize_gabc_syllable_text(model.all_syls[i])
+		if syl ~= "" then
+			if style_map[i] == "accent" then
+				accent_syllables[#accent_syllables + 1] = syl
+			elseif style_map[i] == "extra" then
+				extra_syllables[#extra_syllables + 1] = syl
+			end
+		end
+	end
+
+	local need_gr1 = count_gabc_markers(gabc_fragment, "gr1")
+	local need_gr = count_gabc_markers(gabc_fragment, "gr")
+	if #accent_syllables < need_gr1 then
+		return nil, "insufficient accented syllables"
+	end
+	if #extra_syllables < need_gr then
+		return nil, "insufficient extra syllables"
+	end
+
+	local out, err = apply_gabc_marker_values(gabc_fragment, accent_syllables, extra_syllables)
+	if not out then return nil, err end
+	return out
+end
+
+-- Build a complete first-verse gabc line from text input.
+-- Returns gabc line or nil,error.
+function psalmtones.build_first_verse_gabc(line, preset_name)
+	if not preset_name or preset_name == "" then
+		return nil, "missing preset name"
+	end
+	if not psalmtones.gabc_tones[preset_name] then
+		return nil, "missing gabc preset"
+	end
+
+	local divider = texmacro("PsalmHalfDivider")
+	if divider == "" or not divider then divider = "*" end
+	local a, b = line:find(divider, 1, true)
+	local left, right
+	if a then
+		left = line:sub(1, a - 1)
+		right = line:sub(b + 1)
+	else
+		left = line
+		right = nil
+	end
+	if not right or right == "" then
+		return nil, "missing right half"
+	end
+
+	local fragments = {}
+	local has_flex = left:find("†") or left:find("\\dag")
+	if has_flex then
+		local flex_marker = left:match("†") and "†" or "\\dag"
+		local flex_pos = left:find(flex_marker, 1, true)
+		local before_flex = left:sub(1, flex_pos - 1)
+		local after_flex = left:sub(flex_pos + #flex_marker)
+
+		local flex_fragment, ferr = psalmtones.map_gabc_markers(tokenize(before_flex), preset_name, "flex")
+		if not flex_fragment then
+			return nil, "flex mapping failed: " .. (ferr or "unknown error")
+		end
+		fragments[#fragments + 1] = flex_fragment
+
+		local mediant_fragment, merr = psalmtones.map_gabc_markers(tokenize(after_flex), preset_name, "mediant")
+		if not mediant_fragment then
+			return nil, "mediant mapping failed: " .. (merr or "unknown error")
+		end
+		fragments[#fragments + 1] = mediant_fragment
+	else
+		local mediant_fragment, merr = psalmtones.map_gabc_markers(tokenize(left), preset_name, "mediant")
+		if not mediant_fragment then
+			return nil, "mediant mapping failed: " .. (merr or "unknown error")
+		end
+		fragments[#fragments + 1] = mediant_fragment
+	end
+
+	local term_fragment, terr = psalmtones.map_gabc_markers(tokenize(right), preset_name, "termination")
+	if not term_fragment then
+		return nil, "termination mapping failed: " .. (terr or "unknown error")
+	end
+	fragments[#fragments + 1] = term_fragment
+
+	return table.concat(fragments, " ")
+end
+
 -- Store current preset (no longer uses push_tone - direct storage)
 local current_preset = nil
 
@@ -1001,7 +1187,7 @@ end
 
 -- ===== Process an entire psalm file =====
 -- dir/num.ext is read; each text line is fed to process_line and followed by \par
-function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, gloria_patri, suppress_syllabification, dropcap, dropcap_lines, dropcap_lhang, dropcap_loversize, dropcap_lraise)
+function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, gloria_patri, suppress_syllabification, dropcap, dropcap_lines, dropcap_lhang, dropcap_loversize, dropcap_lraise, first_verse_gabc)
 	ext = (ext and ext ~= "") and ext or "txt"
 	dir = (dir and dir ~= "") and dir or "psalms"
 	if accent_opt and accent_opt ~= "" then psalmtones.set_accent_mode(accent_opt) end
@@ -1042,8 +1228,32 @@ function psalmtones.run_psalm(num, preset, dir, ext, accent_opt, verse_numbers, 
 		if line ~= "" then
 			verse_count = verse_count + 1
 			
+			-- Optionally render first verse as gabc snippet.
+			if is_first_verse and first_verse_gabc == "true" then
+				is_first_verse = false
+				if verse_numbers == "true" then
+					tex.sprint("\\item[] ")
+				end
+
+				local gabc_line, gabc_err = psalmtones.build_first_verse_gabc(line, preset)
+				if gabc_line then
+					tex.sprint("\\gabcsnippet{" .. gabc_line .. "}")
+					tex.sprint("\\par ")
+				else
+					if psalmtones.debug then
+						texio.write_nl(string.format("[firstversegabc] fallback to text: %s", gabc_err or "unknown error"))
+					end
+					-- Fall back to existing first-verse text handling.
+					if dropcap == "true" then
+						psalmtones.process_line_with_dropcap(line, dropcap_lines, dropcap_lhang, dropcap_loversize, dropcap_lraise, suppress_syllabification)
+					elseif suppress_syllabification == "true" then
+						psalmtones.process_line_no_syllabification(line)
+					else
+						psalmtones.process_line(line)
+					end
+				end
 			-- Handle first verse with dropcap if requested
-			if is_first_verse and dropcap == "true" then
+			elseif is_first_verse and dropcap == "true" then
 				is_first_verse = false
 				-- No \item for first verse when dropcap is enabled
 				if verse_numbers ~= "true" then

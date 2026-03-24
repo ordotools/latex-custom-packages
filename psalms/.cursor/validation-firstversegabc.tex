@@ -1,0 +1,26 @@
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage[debug]{psalms}
+\renewcommand*\PsalmDir{../psalms}
+
+% Stub for validation runs so chant output is visible in log markers.
+\providecommand{\gabcsnippet}[1]{\typeout{GABC-SNIPPET:#1}}
+
+\newcommand{\RunCase}[2]{%
+  \typeout{CASE-BEGIN:#1:#2}%
+  \SetPsalmFirstVerseGabc{#2}%
+  \psalm{1}{#1}%
+  \typeout{CASE-END:#1:#2}%
+}
+
+\begin{document}
+\RunCase{1D}{false}
+\RunCase{4E}{false}
+\RunCase{8G}{false}
+\RunCase{peregrinus}{false}
+
+\RunCase{1D}{true}
+\RunCase{4E}{true}
+\RunCase{8G}{true}
+\RunCase{peregrinus}{true}
+\end{document}
